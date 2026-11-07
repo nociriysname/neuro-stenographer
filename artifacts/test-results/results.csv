@@ -1,1 +1,2 @@
 test_id,timestamp_utc,commit,device,file_name,audio_duration_sec,speakers_ref,speakers_hyp,processing_sec,rtf,wer,der,boundary_err_ms,asr_model,diar_model,llm_model,notes
+diar-001,2026-11-07T19:08:20Z,9d217d3+wip,Pixel 9a emulator (arm64; Apple M5 host),kotovice_dialog.wav,32.2,2,2,1.483,0.046,,0.000,,,Nemotron-3-Diarization q8_0,,"синтетика TTS; DER с collar 250 мс; без collar 9.56 % (pad_onset); путаница 0 %"

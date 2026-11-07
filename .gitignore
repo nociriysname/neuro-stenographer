@@ -41,7 +41,7 @@ __pycache__/
 *.py[cod]
 
 # Веса моделей и нативные AAR не храним в git: их скачивает скрипт (см. docs/ARCHITECTURE.md)
-models/
+/models/
 **/src/main/assets/models/
 *.onnx
 *.gguf

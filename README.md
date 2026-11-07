@@ -16,7 +16,7 @@ Android-приложение для Nuclear IT Hack (ноябрь 2026): лок�
 - [x] Каркас: модули по слоям, граф Metro, экраны выбора файла и результата, экспорт JSON/TXT/SRT.
 - [x] Конвейер: декодирование → диаризация → нарезка → ASR → сборка реплик → LLM, покрыт тестами на фейковых движках.
 - [ ] GigaAM-v3 через sherpa-onnx.
-- [ ] Nemotron-3-Diarization через NeMo-Speech.cpp (NDK).
+- [x] Nemotron-3-Diarization через NeMo-Speech.cpp (NDK): собрано, проверено на эмуляторе, см. [TEST_RESULTS](docs/TEST_RESULTS.md).
 - [ ] Локальная LLM через llama.cpp.
 - [ ] Стенд метрик (WER / DER / RTF) и результаты в `artifacts/test-results`.
 

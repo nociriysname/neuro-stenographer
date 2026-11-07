@@ -10,6 +10,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             extensions.configure<ApplicationExtension> {
                 compileSdk = libs.versionInt("android-compileSdk")
+                // Один NDK на все модули: им собираются нативные движки, им же AGP вырезает отладочные символы из .so в APK.
+                ndkVersion = libs.findVersion("android-ndk").get().requiredVersion
                 defaultConfig.minSdk = libs.versionInt("android-minSdk")
                 defaultConfig.targetSdk = libs.versionInt("android-targetSdk")
                 compileOptions {

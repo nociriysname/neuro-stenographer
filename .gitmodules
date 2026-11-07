@@ -1,0 +1,12 @@
+[submodule "src/android/third_party/nemo-speech.cpp"]
+	path = src/android/third_party/nemo-speech.cpp
+	url = https://github.com/NVIDIA/NeMo-Speech.cpp.git
+	shallow = true
+[submodule "src/android/third_party/llama.cpp"]
+	path = src/android/third_party/llama.cpp
+	url = https://github.com/ggml-org/llama.cpp.git
+	shallow = true
+[submodule "src/android/third_party/sentencepiece"]
+	path = src/android/third_party/sentencepiece
+	url = https://github.com/google/sentencepiece.git
+	shallow = true

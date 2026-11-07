@@ -131,14 +131,36 @@ nemo_speech_diar_segments(stream, &seg_cfg /* onset, offset, pad, min_gap, min_d
 
 Готовый GGUF `Nemotron-3-Diarization.q8_0.gguf` (107 МБ) лежит прямо в репозитории модели на HF.
 
-**Главный технический риск — сборка под Android.** Официальных Android-пресетов нет, есть
-`cpu-asr`, `vulkan-diar` и т. п. План:
+**Сборка под Android** (официальных Android-пресетов нет, только `cpu-diar`, `vulkan-diar` и т. п.).
+Как сделано в `core-diarization`:
 
-1. Spike в первый же день: кросс-компиляция только diar-компонентов с CPU-бэкендом ggml через
-   CMake + NDK (`arm64-v8a`, `android-28`). NDK на машине сейчас не установлен.
-2. JNI-обёртка примерно на 150 строк: `create / push / finish / segments / destroy`.
-3. Параметры постобработки (`onset`, `offset`, `min_duration`) подбираем под короткие реплики и
-   перебивания. По умолчанию они настроены на CALLHOME.
+1. Исходники подключены git-сабмодулями в `src/android/third_party`, коммиты зафиксированы:
+   NeMo-Speech.cpp `536b17a` (0.3.0), llama.cpp `bd4f514` (тот же, что закреплён в NeMo-Speech.cpp),
+   SentencePiece v0.2.2.
+2. Их CMake опирается на `CMAKE_SOURCE_DIR` и не подключается через `add_subdirectory`. Поэтому в
+   `src/main/cpp/CMakeLists.txt` цели `nemo_speech_common / runtime_ggml / asr + c_api` собраны заново
+   и вместе с ggml и SentencePiece вшиты в одну `libsteno_diar.so`. Наружу видны только JNI-функции
+   (`--exclude-libs,ALL`), неиспользуемый код выкидывается (`--gc-sections`).
+3. ggml собирается только с CPU-бэкендом, `-march=armv8.2-a+dotprod+fp16`, без OpenMP, с
+   llamafile-SGEMM. Патчи NVIDIA к ggml (в основном про CUDA) выключены: `GGML_PATCHED=OFF`, как в
+   их пресете `vulkan-diar`. Нативный код оптимизируется (`-O2`) даже в debug-сборке приложения.
+4. SentencePiece самой диаризации не нужен, но ASR-код NeMo в той же библиотеке на него ссылается
+   при линковке.
+5. JNI-мост `diar_jni.cpp` поверх `diar.h`: `create / stream_open / push / finish / segments / close / destroy`.
+   Kotlin `NemotronDiarizer` подаёт звук порциями по 2 с (это шаг прогресса и отмены), пресет
+   `v3-offline`, модель грузится на один вызов и сразу освобождается.
+6. Параметры постобработки (`onset`, `offset`, `min_duration` и др.) вынесены в
+   `NemotronDiarizer.Segmentation`. Пока стоят значения NVIDIA (CALLHOME), подбираем на своих данных
+   под короткие реплики и перебивания. Среди них `pad_onset = 0.229` с: реплика начинается на ~230 мс
+   раньше речи. Для нарезки под ASR это запас, чтобы не резать первое слово; для оценки границ —
+   систематический сдвиг, который можно убрать уже после ASR по таймкодам слов.
+7. Рецепту хватает CMake 3.22 — версии, которую AGP скачивает сам, поэтому сборка из исходников не
+   требует ручной установки ничего, кроме `git submodule update`. NDK у всех модулей один
+   (`ndkVersion` в convention-плагинах), им же AGP вырезает отладочные символы: в APK `.so` весит 1.9 МБ.
+
+**Проверено** на эмуляторе Pixel 9a (arm64, 4 ядра, хост Apple M5): синтетический диалог 32 с, два
+голоса, 7 реплик — 7 сегментов, спикеры не перепутаны, DER 0 % с collar 250 мс, RTF 0.046, пиковая
+память процесса 256 МБ. Подробности и оговорки — в [TEST_RESULTS.md](TEST_RESULTS.md).
 
 **Риск по языку.** В обучающих данных русского почти нет. Диаризация в основном акустическая и
 должна переноситься, но это обязательно проверяем на своих русских диалогах.
@@ -189,7 +211,8 @@ src/android/
 └── sources/
     ├── common/                  платформенная инфраструктура, не знает о предметной области
     │   ├── common-uikit         тема, палитра спикеров, UdfViewModel, CollectEffects
-    │   └── common-audio         декодирование (MediaCodec) и ресемплинг в моно 16 кГц
+    │   ├── common-audio         декодирование (MediaCodec) и ресемплинг в моно 16 кГц
+    │   └── common-models        доставка весов: assets → noBackupFilesDir, подкладывание через adb
     ├── core/
     │   ├── core-model           [JVM] сущности: Transcript, Utterance, SpeakerId, PcmAudio, AudioRef
     │   ├── core-domain          [JVM] порты движков и репозиториев, use case'ы, ChunkPlanner, TranscriptAssembler
@@ -270,8 +293,10 @@ sherpa-onnx со своим ONNX Runtime. Собираем только `arm64-v
   мапят файл по пути.
 
 Бюджет (оценка): GigaAM-v3 int8 ~160–250 МБ + Nemotron 107 МБ + LLM 0.5–1.2 ГБ + нативные библиотеки
-~50 МБ, то есть APK ≈ 0.9–1.6 ГБ. Держим меньше 2 ГБ. Веса в git не коммитим: скрипт
-`tools/fetch_models.sh` с SHA-256 плюс Gradle-таска перед `assemble`.
+~50 МБ, то есть APK ≈ 0.9–1.6 ГБ. Держим меньше 2 ГБ. Веса в git не коммитим:
+[`tools/fetch_models.sh`](../tools/fetch_models.sh) качает их по зафиксированной ревизии Hugging Face
+и сверяет SHA-256. Распаковкой и поиском файлов занимается `ModelInstaller` из `common-models`. Для
+разработки модель можно подложить через adb (`fetch_models.sh --adb`), чтобы не пересобирать APK со 100+ МБ весов.
 
 ## Производительность (RTF)
 

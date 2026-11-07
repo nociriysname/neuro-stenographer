@@ -28,9 +28,10 @@ rootProject.name = "neuro-stenographer"
 // Composition root: Application, граф Metro, навигация. Единственный модуль, который видит все слои.
 include(":app")
 
-// common — платформенная инфраструктура без знания предметной области (UI-kit, работа со звуком).
+// common — платформенная инфраструктура без знания предметной области (UI-kit, звук, доставка весов моделей).
 include(":sources:common:common-uikit")
 include(":sources:common:common-audio")
+include(":sources:common:common-models")
 
 // core — предметная область. Слои разведены модулями:
 //   core-model, core-domain — чистый Kotlin/JVM, без Android;
