@@ -1,0 +1,56 @@
+# Secrets and local configuration
+.env
+*.key
+*.pem
+*.jks
+*.keystore
+local.properties
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.iml
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+
+# Build output
+build/
+dist/
+out/
+target/
+bin/
+obj/
+.gradle/
+.kotlin/
+.cxx/
+.externalNativeBuild/
+captures/
+*.apk
+*.aab
+
+# Dependencies and caches
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Веса моделей и нативные AAR не храним в git: их скачивает скрипт (см. docs/ARCHITECTURE.md)
+models/
+**/src/main/assets/models/
+*.onnx
+*.gguf
+*.nemo
+*.safetensors
+src/android/**/libs/*.aar
+
+# Keep large demo media outside Git unless intentionally included
+artifacts/demo/*.mp4
+artifacts/demo/*.mov
+artifacts/demo/*.mkv
+artifacts/demo/*.wav
