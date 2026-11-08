@@ -121,6 +121,20 @@ if [[ -d "$ASR_ASSETS/$GIGAAM_OTHER_DIR" ]]; then
     echo "rm    $(rel "$ASR_ASSETS/$GIGAAM_OTHER_DIR")/ (в APK остаётся один вариант GigaAM)"
 fi
 
+# abseil для SentencePiece (собирается вместе с диаризацией). Кладём заранее: иначе CMake клонирует его с GitHub
+# во время сборки, причём для двух ABI параллельно в одну папку (см. core-diarization/src/main/cpp/CMakeLists.txt).
+ABSL_DIR="$ANDROID_DIR/third_party/sentencepiece/third_party/abseil-cpp"
+ABSL_SHA256="6e1aee535473414164bf83e4ebc40240dec71a4701f8a642d906e95bea1aea0c"
+if [[ -f "$ABSL_DIR/CMakeLists.txt" ]]; then
+    echo "ok    $(rel "$ABSL_DIR")/"
+else
+    fetch "https://github.com/abseil/abseil-cpp/archive/refs/tags/20260526.0.tar.gz" \
+          "$CACHE/abseil-cpp-20260526.0.tar.gz" "$ABSL_SHA256"
+    mkdir -p "$ABSL_DIR"
+    tar -xzf "$CACHE/abseil-cpp-20260526.0.tar.gz" -C "$ABSL_DIR" --strip-components=1
+    echo "unpack $(rel "$ABSL_DIR")/"
+fi
+
 if [[ $PUSH_ADB == 1 ]]; then
     ADB="${ADB:-adb}"
     REMOTE="/sdcard/Android/data/$APP_ID/files/models"
