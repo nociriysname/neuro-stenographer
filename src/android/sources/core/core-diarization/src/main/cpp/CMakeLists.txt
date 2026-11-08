@@ -35,10 +35,11 @@ add_compile_options(-ffunction-sections -fdata-sections)
 # -----------------------------------------------------------------------------
 set(BUILD_SHARED_LIBS   OFF CACHE BOOL "" FORCE)
 set(GGML_NATIVE         OFF CACHE BOOL "" FORCE)
-# Базовый уровень — ARMv8.2 + dotprod + fp16: телефоны примерно с 2019 года (Snapdragon 855+)
-# и эмулятор на Apple Silicon. dotprod заметно ускоряет матричные умножения в q8_0.
+# ARM: базовый ARMv8-a, чтобы приложение работало на любом 64-битном телефоне (см. ниже).
 if(ANDROID_ABI STREQUAL "arm64-v8a")
-    set(GGML_CPU_ARM_ARCH "armv8.2-a+dotprod+fp16" CACHE STRING "" FORCE)
+    # Базовый ARMv8-a без dotprod/fp16: иначе SIGILL на телефонах с ARMv8.0 (Snapdragon 685 в Redmi Note 13 4G,
+    # Cortex-A53/A73: приложение падало на диаризации). ONNX Runtime (ASR) выбирает инструкции сам во время работы.
+    set(GGML_CPU_ARM_ARCH "armv8-a" CACHE STRING "" FORCE)
 elseif(ANDROID_ABI STREQUAL "x86_64")
     # Стандартный эмулятор Android (QEMU) отдаёт гостю только SSE4.2/AVX/F16C — без AVX2 и FMA,
     # даже если хост их умеет (проверено на android-36 x86_64). AVX2-сборка упала бы с SIGILL.

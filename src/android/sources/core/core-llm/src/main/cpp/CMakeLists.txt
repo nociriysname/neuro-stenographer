@@ -28,7 +28,9 @@ set(GGML_OPENMP           OFF CACHE BOOL "" FORCE)
 set(GGML_LLAMAFILE        ON  CACHE BOOL "" FORCE)
 set(GGML_BACKEND_DL       OFF CACHE BOOL "" FORCE)
 if(ANDROID_ABI STREQUAL "arm64-v8a")
-    set(GGML_CPU_ARM_ARCH "armv8.2-a+dotprod+fp16" CACHE STRING "" FORCE)
+    # Базовый ARMv8-a без dotprod/fp16: иначе SIGILL на телефонах с ARMv8.0 (Snapdragon 685 в Redmi Note 13 4G,
+    # Cortex-A53/A73: приложение падало на диаризации). ONNX Runtime (ASR) выбирает инструкции сам во время работы.
+    set(GGML_CPU_ARM_ARCH "armv8-a" CACHE STRING "" FORCE)
 elseif(ANDROID_ABI STREQUAL "x86_64")
     # Стандартный эмулятор Android (QEMU) отдаёт гостю только SSE4.2/AVX/F16C — без AVX2 и FMA,
     # даже если хост их умеет (проверено на android-36 x86_64). AVX2-сборка упала бы с SIGILL.
