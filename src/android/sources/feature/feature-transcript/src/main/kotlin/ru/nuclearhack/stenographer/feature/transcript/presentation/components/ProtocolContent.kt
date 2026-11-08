@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -105,17 +106,42 @@ internal fun ProtocolContent(
                         color = StenoTheme.colors.text2,
                     )
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(spacing.s3)) {
-                    StenoButton(
-                        "Копировать",
-                        onCopy,
-                        modifier = Modifier.weight(1f),
-                        variant = StenoButtonVariant.Secondary,
-                        icon = StenoIcons.Copy,
-                    )
-                    StenoButton("Экспорт", onShare, modifier = Modifier.weight(1f), icon = StenoIcons.Share)
-                }
+                ProtocolActions(onCopy, onShare)
             }
+        }
+    }
+}
+
+/**
+ * «Копировать» и «Экспорт»: рядом, как в макете S08. При крупном системном шрифте подписи с иконками
+ * в половину ширины не помещаются — тогда кнопки встают друг под другом на всю ширину.
+ */
+@Composable
+private fun ProtocolActions(onCopy: () -> Unit, onShare: () -> Unit) {
+    val spacing = StenoTheme.spacing
+    val stacked = LocalDensity.current.fontScale > STACK_FONT_SCALE
+    val copy: @Composable (Modifier) -> Unit = { m ->
+        StenoButton(
+            "Копировать",
+            onCopy,
+            modifier = m,
+            variant = StenoButtonVariant.Secondary,
+            icon = StenoIcons.Copy,
+            fillWidth = true,
+        )
+    }
+    val share: @Composable (Modifier) -> Unit = { m ->
+        StenoButton("Экспорт", onShare, modifier = m, icon = StenoIcons.Share, fillWidth = true)
+    }
+    if (stacked) {
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.s2)) {
+            share(Modifier.fillMaxWidth())
+            copy(Modifier.fillMaxWidth())
+        }
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing.s3)) {
+            copy(Modifier.weight(1f))
+            share(Modifier.weight(1f))
         }
     }
 }
@@ -161,14 +187,20 @@ private fun GeneratingState(progress: Float) {
         verticalArrangement = Arrangement.spacedBy(spacing.s4, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // Первые секунды уходят на загрузку модели (~1 ГБ), прогресса генерации ещё нет.
+        val loading = progress <= 0f
         StenoProgressRing(progress = progress) {
             StenoText(
-                "${(progress * 100).roundToInt()}%",
+                if (loading) "…" else "${(progress * 100).roundToInt()}%",
                 style = StenoTheme.typography.subtitle.tabular(),
                 textAlign = TextAlign.Center,
             )
         }
-        StenoText("Составляем протокол", style = StenoTheme.typography.subtitle, textAlign = TextAlign.Center)
+        StenoText(
+            if (loading) "Загружаем модель…" else "Составляем протокол",
+            style = StenoTheme.typography.subtitle,
+            textAlign = TextAlign.Center,
+        )
         StenoText(
             "Локальная модель читает расшифровку и выписывает решения и задачи. Интернет не нужен — " +
                 "обычно это занимает около минуты.",
@@ -265,3 +297,6 @@ private fun TaskRow(task: ProtocolTask, speakerNumbers: Map<String, Int>) {
 
 /** Восьмой цвет палитры спикеров — серый: для исполнителей, названных по имени. */
 private const val NEUTRAL_SPEAKER_COLOR = 7
+
+/** Масштаб шрифта, начиная с которого кнопки протокола встают в столбик. */
+private const val STACK_FONT_SCALE = 1.15f

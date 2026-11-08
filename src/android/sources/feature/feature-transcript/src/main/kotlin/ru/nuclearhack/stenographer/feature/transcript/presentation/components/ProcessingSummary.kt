@@ -67,7 +67,6 @@ private fun StageTimings(timings: ProcessingTimings) {
         "Декодирование" to timings.decodingMs,
         "Диаризация" to timings.diarizationMs,
         "Распознавание" to timings.recognitionMs,
-        "Постобработка" to timings.postProcessingMs,
     )
     rows.forEach { (title, ms) ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

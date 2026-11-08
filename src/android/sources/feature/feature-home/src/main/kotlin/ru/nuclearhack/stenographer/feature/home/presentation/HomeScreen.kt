@@ -121,7 +121,7 @@ private fun HomeContent(
             PrivacyBadges(state.engines)
             StenoActionCard(
                 title = "Записать разговор",
-                subtitle = "Диктофон с паузой, звук остаётся на устройстве",
+                subtitle = "Диктофон с паузой",
                 icon = StenoIcons.Record,
                 onClick = onRecord,
                 modifier = Modifier.padding(top = spacing.s2),
