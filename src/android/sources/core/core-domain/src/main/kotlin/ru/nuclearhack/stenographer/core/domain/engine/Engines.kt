@@ -1,5 +1,6 @@
 package ru.nuclearhack.stenographer.core.domain.engine
 
+import ru.nuclearhack.stenographer.core.model.MeetingProtocol
 import ru.nuclearhack.stenographer.core.model.PcmAudio
 import ru.nuclearhack.stenographer.core.model.Transcript
 
@@ -77,4 +78,16 @@ interface TranscriptPostProcessor {
     val info: EngineInfo
 
     suspend fun process(transcript: Transcript): Transcript
+}
+
+/**
+ * Протокол встречи от локальной LLM: краткое содержание, решения, задачи с исполнителями и сроками.
+ *
+ * Работает поверх готовой расшифровки и не меняет её текст. Длинные записи реализация режет на части
+ * и объединяет протоколы частей. [onProgress] получает долю от 0 до 1.
+ */
+interface ProtocolGenerator {
+    val info: EngineInfo
+
+    suspend fun generate(transcript: Transcript, onProgress: (Float) -> Unit = {}): MeetingProtocol
 }

@@ -30,6 +30,7 @@ internal fun DoneTopBar(
     title: String,
     onBack: () -> Unit,
     onSearch: () -> Unit,
+    onProtocol: () -> Unit,
     onMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -42,6 +43,12 @@ internal fun DoneTopBar(
                 icon = StenoIcons.Search,
                 contentDescription = "Поиск по тексту",
                 onClick = onSearch,
+                variant = StenoIconButtonVariant.Ghost,
+            )
+            StenoIconButton(
+                icon = StenoIcons.Protocol,
+                contentDescription = "Протокол встречи",
+                onClick = onProtocol,
                 variant = StenoIconButtonVariant.Ghost,
             )
             StenoIconButton(

@@ -6,15 +6,14 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import ru.nuclearhack.stenographer.core.domain.engine.EngineInfo
 import ru.nuclearhack.stenographer.core.domain.engine.EngineKind
-import ru.nuclearhack.stenographer.core.domain.engine.EngineUnavailableException
 import ru.nuclearhack.stenographer.core.domain.engine.TranscriptPostProcessor
 import ru.nuclearhack.stenographer.core.model.Transcript
 
 /**
- * Постобработка локальной LLM через llama.cpp (GGUF, 1–2B instruct, Q4).
+ * Этап постобработки расшифровки оставлен «прозрачным» намеренно.
  *
- * Пока не подключено. Реализация обязана соблюдать контракт [TranscriptPostProcessor]:
- * сравнивать нормализованные слова до и после и откатывать реплику, если LLM поменяла слова.
+ * Организаторы попросили текст не приглаживать: его сравнивают с эталоном по WER, а пунктуацию уже ставит
+ * GigaAM-v3 e2e. Локальная LLM работает отдельно — составляет протокол встречи ([LfmProtocolGenerator]).
  */
 @Inject
 @SingleIn(AppScope::class)
@@ -23,11 +22,10 @@ class LlamaTranscriptPostProcessor : TranscriptPostProcessor {
 
     override val info = EngineInfo(
         kind = EngineKind.Llm,
-        modelName = "выбирается по замерам (1–2B instruct, Q4_K_M)",
-        runtime = "llama.cpp",
-        isReady = false,
+        modelName = "без изменений текста",
+        runtime = "—",
+        isReady = true,
     )
 
-    override suspend fun process(transcript: Transcript): Transcript =
-        throw EngineUnavailableException(info.kind, "Локальная LLM ещё не подключена к приложению")
+    override suspend fun process(transcript: Transcript): Transcript = transcript
 }

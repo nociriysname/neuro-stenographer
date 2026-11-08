@@ -7,8 +7,8 @@ android {
     namespace = "ru.nuclearhack.stenographer.core.diarization"
 
     defaultConfig {
-        // Только arm64: современные телефоны и эмулятор на Apple Silicon. Вдвое меньше APK и время сборки.
-        ndk { abiFilters += "arm64-v8a" }
+        // arm64 — телефоны и эмулятор на Apple Silicon; x86_64 — стандартный эмулятор на x86-хосте (так проверяют).
+        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         externalNativeBuild {
             cmake {
                 arguments += "-DSTENO_THIRD_PARTY_DIR=$rootDir/third_party"

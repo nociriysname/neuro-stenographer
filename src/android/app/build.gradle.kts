@@ -12,7 +12,8 @@ android {
         applicationId = "ru.nuclearhack.stenographer"
         versionCode = 1
         versionName = "0.1.0"
-        ndk { abiFilters += "arm64-v8a" }
+        // arm64 — телефоны и эмулятор на Apple Silicon; x86_64 — стандартный эмулятор на x86-хосте (так проверяют).
+        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
 
     // Веса моделей лежат в assets без сжатия: копируются на устройство быстро и без распаковки в память.

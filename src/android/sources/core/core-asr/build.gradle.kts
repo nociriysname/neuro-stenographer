@@ -7,8 +7,8 @@ android {
     namespace = "ru.nuclearhack.stenographer.core.asr"
 
     defaultConfig {
-        // В AAR sherpa-onnx библиотеки под 4 ABI, нам нужен только arm64 (как у диаризации).
-        ndk { abiFilters += "arm64-v8a" }
+        // В AAR sherpa-onnx библиотеки под 4 ABI; берём arm64 (телефоны) и x86_64 (стандартный эмулятор).
+        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
 
     // Веса лежат в assets модуля и попадают в APK инструментальных тестов: без сжатия копируются быстрее.

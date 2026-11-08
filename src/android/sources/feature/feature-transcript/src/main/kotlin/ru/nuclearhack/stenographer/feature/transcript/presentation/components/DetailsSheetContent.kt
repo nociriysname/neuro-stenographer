@@ -10,7 +10,18 @@ import ru.nuclearhack.stenographer.feature.transcript.presentation.TranscriptPha
 
 /** Лист «Ещё»: переход к экспорту и подробная сводка обработки (время по этапам, RTF, предупреждения). */
 @Composable
-internal fun ColumnScope.DetailsSheetContent(done: TranscriptPhase.Done, onExport: () -> Unit) {
+internal fun ColumnScope.DetailsSheetContent(
+    done: TranscriptPhase.Done,
+    onExport: () -> Unit,
+    onProtocol: () -> Unit,
+) {
+    StenoListRow(
+        title = "Протокол встречи",
+        subtitle = "Решения и задачи — локальная модель",
+        leading = { StenoIcon(StenoIcons.Protocol, contentDescription = null, tint = StenoTheme.colors.text2) },
+        trailing = { StenoIcon(StenoIcons.Chevron, contentDescription = null, tint = StenoTheme.colors.text3) },
+        onClick = onProtocol,
+    )
     StenoListRow(
         title = "Экспорт",
         subtitle = "JSON, TXT, SRT",

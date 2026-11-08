@@ -3,12 +3,17 @@ package ru.nuclearhack.stenographer.feature.transcript.presentation
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import ru.nuclearhack.stenographer.common.uikit.components.bar.StenoTopBar
@@ -27,6 +32,7 @@ import ru.nuclearhack.stenographer.feature.transcript.presentation.components.De
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.DoneTopBar
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.ExportSheetContent
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.ProcessingContent
+import ru.nuclearhack.stenographer.feature.transcript.presentation.components.ProtocolContent
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.SearchTopBar
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.TranscriptDoneContent
 
@@ -40,6 +46,7 @@ fun TranscriptScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val toastHostState = rememberStenoToastHostState()
+    val context = LocalContext.current
 
     // Один лаунчер на формат: mime-тип CreateDocument задаётся при создании контракта.
     val exportLaunchers = TranscriptFormat.entries.associateWith { format ->
@@ -54,6 +61,21 @@ fun TranscriptScreen(
                 exportLaunchers.getValue(effect.format).launch(effect.suggestedName)
 
             is TranscriptEffect.ShowMessage -> toastHostState.show(effect.text)
+            is TranscriptEffect.CopyText -> {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("Протокол встречи", effect.text))
+                toastHostState.show("Протокол скопирован")
+            }
+
+            is TranscriptEffect.ShareText -> context.startActivity(
+                Intent.createChooser(
+                    Intent(Intent.ACTION_SEND)
+                        .setType("text/plain")
+                        .putExtra(Intent.EXTRA_SUBJECT, effect.title)
+                        .putExtra(Intent.EXTRA_TEXT, effect.text),
+                    effect.title,
+                ),
+            )
         }
     }
 
@@ -68,6 +90,20 @@ internal fun TranscriptContent(
     onAction: (TranscriptAction) -> Unit,
 ) {
     val phase = state.phase
+    val protocol = state.protocol
+    if (protocol != null) {
+        BackHandler { onAction(TranscriptAction.ProtocolClosed) }
+        StenoScaffold(toastHostState = toastHostState) {
+            ProtocolContent(
+                protocol = protocol,
+                onBack = { onAction(TranscriptAction.ProtocolClosed) },
+                onCopy = { onAction(TranscriptAction.ProtocolCopy) },
+                onShare = { onAction(TranscriptAction.ProtocolShare) },
+                onRetry = { onAction(TranscriptAction.ProtocolRetry) },
+            )
+        }
+        return
+    }
     BackHandler(enabled = state.search.open) { onAction(TranscriptAction.SearchClosed) }
     StenoScaffold(
         topBar = { TranscriptTopBar(state, onBack, onAction) },
@@ -125,6 +161,7 @@ private fun TranscriptTopBar(state: TranscriptState, onBack: () -> Unit, onActio
             title = title,
             onBack = onBack,
             onSearch = { onAction(TranscriptAction.SearchOpened) },
+            onProtocol = { onAction(TranscriptAction.ProtocolOpened) },
             onMore = { onAction(TranscriptAction.SheetOpened(TranscriptSheet.Details)) },
         )
 
@@ -152,6 +189,10 @@ private fun DoneSheets(state: TranscriptState, done: TranscriptPhase.Done, onAct
         onDismissRequest = { onAction(TranscriptAction.SheetDismissed) },
         title = "Ещё",
     ) {
-        DetailsSheetContent(done, onExport = { onAction(TranscriptAction.SheetOpened(TranscriptSheet.Export)) })
+        DetailsSheetContent(
+            done,
+            onExport = { onAction(TranscriptAction.SheetOpened(TranscriptSheet.Export)) },
+            onProtocol = { onAction(TranscriptAction.ProtocolOpened) },
+        )
     }
 }
