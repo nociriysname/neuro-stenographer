@@ -19,12 +19,16 @@ internal fun assigneeSpeakerNumber(assignee: String): Int? =
     Regex("""^(спикер|speaker)[ _]?(\d+)$""", RegexOption.IGNORE_CASE).find(assignee.trim())
         ?.groupValues?.get(2)?.toIntOrNull()
 
-/** «спикер_2» → «Спикер 2», имя — как есть. */
-internal fun assigneeLabel(assignee: String): String =
-    assigneeSpeakerNumber(assignee)?.let { "Спикер $it" } ?: assignee.trim()
+/** «спикер_2» → имя, которое дал пользователь, или «Спикер 2»; прозвучавшее имя — как есть. */
+internal fun assigneeLabel(assignee: String, names: Map<Int, String> = emptyMap()): String =
+    assigneeSpeakerNumber(assignee)?.let { names[it - 1] ?: "Спикер $it" } ?: assignee.trim()
 
 /** Текст протокола для копирования и «Поделиться». */
-internal fun formatProtocol(p: MeetingProtocol, recordingName: String?): String = buildString {
+internal fun formatProtocol(
+    p: MeetingProtocol,
+    recordingName: String?,
+    names: Map<Int, String> = emptyMap(),
+): String = buildString {
     appendLine(p.title.ifBlank { "Протокол встречи" })
     recordingName?.let { appendLine("Запись: $it") }
     appendLine()
@@ -39,7 +43,10 @@ internal fun formatProtocol(p: MeetingProtocol, recordingName: String?): String 
         appendLine()
         appendLine("Задачи")
         p.tasks.forEach { t ->
-            val meta = listOfNotNull(t.assignee?.let(::assigneeLabel), t.due?.let { "срок: $it" }).joinToString(", ")
+            val meta = listOfNotNull(
+                t.assignee?.let { assigneeLabel(it, names) },
+                t.due?.let { "срок: $it" },
+            ).joinToString(", ")
             appendLine("☐ ${t.task}" + if (meta.isNotEmpty()) " — $meta" else "")
         }
     }

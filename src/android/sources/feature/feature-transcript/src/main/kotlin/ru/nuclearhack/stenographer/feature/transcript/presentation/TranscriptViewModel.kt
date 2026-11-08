@@ -61,6 +61,10 @@ class TranscriptViewModel(
             TranscriptAction.ProtocolCopy,
             TranscriptAction.ProtocolShare,
             -> onProtocolAction(action)
+            is TranscriptAction.SpeakerRenameOpened,
+            is TranscriptAction.SpeakerRenamed,
+            TranscriptAction.SpeakerRenameDismissed,
+            -> onSpeakerAction(action)
             TranscriptAction.Retry -> startProcessing()
             TranscriptAction.Cancel -> cancelProcessing()
             is TranscriptAction.LayoutSelected -> updateState { copy(layout = action.layout) }
@@ -77,6 +81,24 @@ class TranscriptViewModel(
                 requestExport(currentState.exportFormat)
             }
             is TranscriptAction.ExportDestinationChosen -> export(action.destination, action.format)
+        }
+    }
+
+    private fun onSpeakerAction(action: TranscriptAction) {
+        when (action) {
+            is TranscriptAction.SpeakerRenameOpened ->
+                updateState { copy(renamingSpeaker = action.speakerIndex, sheet = null) }
+            is TranscriptAction.SpeakerRenamed -> updateState {
+                val name = action.name.trim()
+                val names = if (name.isEmpty()) {
+                    speakerNames - action.speakerIndex
+                } else {
+                    speakerNames + (action.speakerIndex to name)
+                }
+                copy(speakerNames = names, renamingSpeaker = null)
+            }
+            TranscriptAction.SpeakerRenameDismissed -> updateState { copy(renamingSpeaker = null) }
+            else -> Unit
         }
     }
 
@@ -128,7 +150,9 @@ class TranscriptViewModel(
     }
 
     private fun protocolText(): String? =
-        (currentState.protocol as? ProtocolUi.Ready)?.let { formatProtocol(it.protocol, currentState.fileName) }
+        (currentState.protocol as? ProtocolUi.Ready)?.let {
+            formatProtocol(it.protocol, currentState.fileName, currentState.speakerNames)
+        }
 
     private fun cancelProcessing() {
         processing?.cancel()

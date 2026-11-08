@@ -1,5 +1,8 @@
 package ru.nuclearhack.stenographer.feature.transcript.presentation.components
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 
@@ -13,7 +16,17 @@ internal enum class SpeakerTint(val mix: Float) {
 
 internal fun SpeakerTint.over(background: Color, speaker: Color): Color = lerp(background, speaker, mix)
 
-/** Подпись и бейдж спикера: номер = порядок первого появления в записи. */
-internal fun speakerName(speakerIndex: Int): String = "Спикер ${speakerIndex + 1}"
+/** Имена, которые пользователь дал говорящим: индекс спикера (с нуля) → имя. */
+internal val LocalSpeakerNames = staticCompositionLocalOf<Map<Int, String>> { emptyMap() }
 
-internal fun speakerLabel(speakerIndex: Int): String = (speakerIndex + 1).toString()
+/** Подпись спикера: имя, если его дали, иначе «Спикер N» (N — порядок первого появления в записи). */
+@Composable
+@ReadOnlyComposable
+internal fun speakerName(speakerIndex: Int): String =
+    LocalSpeakerNames.current[speakerIndex] ?: "Спикер ${speakerIndex + 1}"
+
+/** Бейдж спикера: первая буква имени или номер. */
+@Composable
+@ReadOnlyComposable
+internal fun speakerLabel(speakerIndex: Int): String =
+    LocalSpeakerNames.current[speakerIndex]?.take(1)?.uppercase() ?: (speakerIndex + 1).toString()

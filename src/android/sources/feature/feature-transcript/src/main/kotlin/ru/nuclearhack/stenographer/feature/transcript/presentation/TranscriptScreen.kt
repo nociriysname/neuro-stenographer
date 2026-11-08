@@ -10,27 +10,36 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import ru.nuclearhack.stenographer.common.uikit.components.bar.StenoTopBar
+import ru.nuclearhack.stenographer.common.uikit.components.button.StenoButton
+import ru.nuclearhack.stenographer.common.uikit.components.field.StenoTextField
 import ru.nuclearhack.stenographer.common.uikit.components.overlay.StenoBottomSheet
 import ru.nuclearhack.stenographer.common.uikit.components.overlay.StenoToastHostState
 import ru.nuclearhack.stenographer.common.uikit.components.overlay.rememberStenoToastHostState
 import ru.nuclearhack.stenographer.common.uikit.components.scaffold.StenoScaffold
 import ru.nuclearhack.stenographer.common.uikit.components.state.StenoStateAction
 import ru.nuclearhack.stenographer.common.uikit.components.state.StenoStatePanel
+import ru.nuclearhack.stenographer.common.uikit.components.text.StenoText
 import ru.nuclearhack.stenographer.common.uikit.foundation.icon.StenoIcons
 import ru.nuclearhack.stenographer.common.uikit.foundation.icon.StenoIllustrations
+import ru.nuclearhack.stenographer.common.uikit.foundation.theme.StenoTheme
 import ru.nuclearhack.stenographer.common.uikit.udf.CollectEffects
 import ru.nuclearhack.stenographer.core.domain.repository.TranscriptFormat
 import ru.nuclearhack.stenographer.core.model.AudioRef
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.DetailsSheetContent
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.DoneTopBar
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.ExportSheetContent
+import ru.nuclearhack.stenographer.feature.transcript.presentation.components.LocalSpeakerNames
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.ProcessingContent
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.ProtocolContent
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.SearchTopBar
@@ -80,7 +89,15 @@ fun TranscriptScreen(
         }
     }
 
-    TranscriptContent(state, toastHostState, onBack = onBack, onAction = viewModel::onAction, audioUri = audio.value)
+    CompositionLocalProvider(LocalSpeakerNames provides state.speakerNames) {
+        TranscriptContent(
+            state,
+            toastHostState,
+            onBack = onBack,
+            onAction = viewModel::onAction,
+            audioUri = audio.value,
+        )
+    }
 }
 
 @Composable
@@ -196,6 +213,39 @@ private fun DoneSheets(state: TranscriptState, done: TranscriptPhase.Done, onAct
             done,
             onExport = { onAction(TranscriptAction.SheetOpened(TranscriptSheet.Export)) },
             onProtocol = { onAction(TranscriptAction.ProtocolOpened) },
+            onRenameSpeaker = { onAction(TranscriptAction.SpeakerRenameOpened(it)) },
         )
+    }
+    RenameSpeakerSheet(state, onAction)
+}
+
+/** Шторка S07: имя говорящего. Пустое поле — вернуть «Спикер N». */
+@Composable
+private fun RenameSpeakerSheet(state: TranscriptState, onAction: (TranscriptAction) -> Unit) {
+    val index = state.renamingSpeaker
+    var name by remember(index) { mutableStateOf(index?.let { state.speakerNames[it] }.orEmpty()) }
+    StenoBottomSheet(
+        visible = index != null,
+        onDismissRequest = { onAction(TranscriptAction.SpeakerRenameDismissed) },
+        title = "Как зовут говорящего?",
+    ) {
+        if (index != null) {
+            StenoTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = "Имя",
+                placeholder = "Спикер ${index + 1}",
+            )
+            StenoText(
+                "Имя появится в репликах и протоколе. В JSON для проверки остаётся speaker_${index + 1}.",
+                style = StenoTheme.typography.caption,
+                color = StenoTheme.colors.text2,
+            )
+            StenoButton(
+                "Сохранить",
+                onClick = { onAction(TranscriptAction.SpeakerRenamed(index, name)) },
+                fillWidth = true,
+            )
+        }
     }
 }

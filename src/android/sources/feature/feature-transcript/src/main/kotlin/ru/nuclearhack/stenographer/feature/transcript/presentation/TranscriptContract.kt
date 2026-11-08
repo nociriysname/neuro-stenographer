@@ -17,6 +17,10 @@ data class TranscriptState(
     val exportFormat: TranscriptFormat = TranscriptFormat.Json,
     /** Открыт экран «Протокол встречи» (S08); null — показан результат расшифровки. */
     val protocol: ProtocolUi? = null,
+    /** Имена говорящих от пользователя: индекс спикера (с нуля) → имя. В JSON по ТЗ остаются speaker_N. */
+    val speakerNames: Map<Int, String> = emptyMap(),
+    /** Открыта шторка переименования этого спикера. */
+    val renamingSpeaker: Int? = null,
 )
 
 /** Протокол встречи от локальной LLM: составляется, готов или не получился. */
@@ -75,6 +79,13 @@ sealed interface TranscriptPhase {
 sealed interface TranscriptAction {
     /** Открыть протокол: при первом открытии модель его составляет, дальше показывается готовый. */
     data object ProtocolOpened : TranscriptAction
+
+    data class SpeakerRenameOpened(val speakerIndex: Int) : TranscriptAction
+
+    /** Пустое имя — вернуть «Спикер N». */
+    data class SpeakerRenamed(val speakerIndex: Int, val name: String) : TranscriptAction
+
+    data object SpeakerRenameDismissed : TranscriptAction
 
     data object ProtocolClosed : TranscriptAction
 

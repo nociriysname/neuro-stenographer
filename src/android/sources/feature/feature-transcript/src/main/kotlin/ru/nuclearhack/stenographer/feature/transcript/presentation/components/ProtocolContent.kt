@@ -236,7 +236,11 @@ private fun EmptyLine(text: String) {
 @Composable
 private fun TaskRow(task: ProtocolTask, speakerNumbers: Map<String, Int>) {
     val assignee = task.assignee
-    val meta = listOfNotNull(assignee?.let(::assigneeLabel), task.due?.let { "до ${it.removePrefix("до ").trim()}" })
+    val names = LocalSpeakerNames.current
+    val meta = listOfNotNull(
+        assignee?.let { assigneeLabel(it, names) },
+        task.due?.let { "до ${it.removePrefix("до ").trim()}" },
+    )
         .joinToString(" · ")
         .ifEmpty { null }
     val number = assignee?.let(::assigneeSpeakerNumber)
@@ -248,7 +252,9 @@ private fun TaskRow(task: ProtocolTask, speakerNumbers: Map<String, Int>) {
                 // Спикер из диаризации — его цвет и номер; прозвучавшее имя — инициал в нейтральном цвете.
                 val colorIndex = number?.let { n -> (speakerNumbers["speaker_$n"] ?: n) - 1 } ?: NEUTRAL_SPEAKER_COLOR
                 StenoSpeakerBadge(
-                    label = number?.toString() ?: assigneeLabel(it).take(1).uppercase(),
+                    label = assigneeLabel(it, names).let { l ->
+                        if (l.startsWith("Спикер ")) "$number" else l.take(1).uppercase()
+                    },
                     colorIndex = colorIndex,
                     size = StenoSpeakerBadgeSize.Small,
                 )
