@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Запись</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+/* Кнопка-микрофон: «дыхание» по громкости (--lv 0..1) и тембру (морфинг формы ореолов) */
+.mic{position:relative;width:96px;height:96px;padding:0;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.mic .core{position:relative;z-index:2;width:80px;height:80px;border-radius:28px;background:var(--p);color:var(--onp);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px color-mix(in srgb,var(--p) 30%,transparent)}
+.mic .halo{position:absolute;left:8px;top:8px;width:80px;height:80px;border-radius:28px;background:var(--p);transform-origin:50% 50%}
+.mic .h1{opacity:.22;animation:vo1 .85s ease-in-out infinite alternate}
+.mic .h2{opacity:.14;animation:vo2 1.35s ease-in-out infinite alternate}
+.mic .h3{opacity:.08;animation:vo3 2.1s ease-in-out infinite alternate}
+@keyframes vo1{from{transform:scale(1.02)}to{transform:scale(calc(1.07 + var(--lv) * .2))}}
+@keyframes vo2{from{transform:scale(1.04) rotate(0deg);border-radius:28px}to{transform:scale(calc(1.12 + var(--lv) * .3)) rotate(14deg);border-radius:46% 54% 40% 60% / 54% 42% 58% 46%}}
+@keyframes vo3{from{transform:scale(1.06) rotate(0deg);border-radius:30px}to{transform:scale(calc(1.18 + var(--lv) * .42)) rotate(-22deg);border-radius:58% 42% 52% 48% / 44% 56% 44% 56%}}
+.mic.idle .halo{animation:none;opacity:0}
+.mic.idle .core{background:var(--s3);color:var(--tx2);box-shadow:none}
+.D .mic.idle .core{color:var(--tx2)}
+.cb.x{color:var(--rec-ink);background:var(--rec-soft);border-color:color-mix(in srgb,var(--rec) 45%,var(--line2))}
+.cb{width:64px;height:64px;border-radius:20px;border:1px solid var(--line2);background:var(--bg);color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ctl{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:80px;font-size:13px;line-height:16px;font-weight:600;color:var(--tx2)}
+.wave.rec i.dm,.wave i.dm{background:var(--line2)}
+.wave.paused i{background:var(--tx3);opacity:.55}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-record" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.25"/><circle cx="12" cy="12" r="3.25" fill="currentColor"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5M9 20.5h6"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6.5" y="5.5" width="3.5" height="13" rx="1.2"/><rect x="14" y="5.5" width="3.5" height="13" rx="1.2"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-chip" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></symbol>
+<symbol id="i-delete" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2M6.5 7l.8 11.2a1.5 1.5 0 0 0 1.5 1.3h6.4a1.5 1.5 0 0 0 1.5-1.3L17.5 7M10 11v5M14 11v5"/></symbol>
+</defs></svg>
+<div class="board" style="width:1240px;height:1810px">
+  <div class="col g4"><div class="cap"><b>Экран 3</b> Запись · идёт, пауза, отмена с подтверждением</div><h1>Таймер с табличными цифрами, живая волна, уровень сигнала, микрофон по центру</h1></div>
+  <div class="grid">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="6">
+      <div class="cell">
+        <div class="cap"><b class="{{p.bc}}">{{p.theme}}</b>{{p.label}}</div>
+        <div class="ph ns {{p.cls}}">
+          <div class="fx ai jb" style="padding:12px 8px 0 8px;min-height:68px">
+            <button class="ib g" aria-label="Отменить запись"><svg class="ic" aria-hidden="true"><use href="#i-close"></use></svg></button>
+            <sc-if value="{{p.live}}" hint-placeholder-val="{{ true }}"><span class="bdg rec"><span class="dot pulse"></span>Идёт запись</span></sc-if>
+            <sc-if value="{{p.pause}}" hint-placeholder-val="{{ false }}"><span class="bdg warn"><svg class="ic s" aria-hidden="true"><use href="#i-pause"></use></svg>Пауза</span></sc-if>
+            <span style="width:48px"></span>
+          </div>
+          <div class="col ai" style="padding:20px 20px 0">
+            <div class="t-cp c2">Запись 7 ноября, 23:10</div>
+            <div class="t-tm num" style="margin-top:8px;color:{{p.tc}}">00:12:48</div>
+          </div>
+          <div class="wave {{p.wc}}" style="height:132px;margin-top:20px;padding:0 20px;gap:3px">
+            <sc-for list="{{p.bars}}" as="b" hint-placeholder-count="42"><i class="{{b.c}}" style="{{b.s}}"></i></sc-for>
+          </div>
+          <div class="pad col g8" style="margin-top:12px">
+            <div class="fx ai jb"><span class="t-cp c2">Уровень сигнала</span><span class="t-cp c2">{{p.lvlText}}</span></div>
+            <div class="lvl"><sc-for list="{{p.lvl}}" as="l" hint-placeholder-count="24"><i class="{{l}}"></i></sc-for></div>
+          </div>
+          <div class="col ai" style="margin-top:auto;padding-top:12px">
+            <div class="ctl"><button class="mic {{p.micc}}" style="--lv:{{p.lv}}" aria-label="Завершить запись и расшифровать"><span class="halo h3"></span><span class="halo h2"></span><span class="halo h1"></span><span class="core"><svg class="ic xl" aria-hidden="true"><use href="#i-mic"></use></svg></span></button>Завершить</div>
+          </div>
+          <div class="fx ai jb" style="padding:20px 48px 28px">
+            <div class="ctl"><button class="cb" aria-label="{{p.pauseLabel}}"><sc-if value="{{p.live}}" hint-placeholder-val="{{ true }}"><svg class="ic l" aria-hidden="true"><use href="#i-pause"></use></svg></sc-if><sc-if value="{{p.pause}}" hint-placeholder-val="{{ false }}"><svg class="ic l" style="color:var(--rec-ink)" aria-hidden="true"><use href="#i-record"></use></svg></sc-if></button>{{p.pauseLabel}}</div>
+            <div class="ctl" style="color:var(--rec-ink)"><button class="cb x" aria-label="Отменить запись"><svg class="ic l" aria-hidden="true"><use href="#i-delete"></use></svg></button>Отмена</div>
+          </div>
+          <sc-if value="{{p.confirm}}" hint-placeholder-val="{{ false }}">
+            <div class="scrim"></div>
+            <div class="dlg">
+              <div class="t-su">Отменить запись?</div>
+              <div class="t-bd c2">Записанные 12 минут 48 секунд будут удалены с устройства. Вернуть их не получится.</div>
+              <div class="col g8" style="margin-top:8px"><button class="btn p blk">Продолжить запись</button><button class="btn d blk"><svg class="ic" aria-hidden="true"><use href="#i-delete"></use></svg>Удалить запись</button></div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1240,"height":1810}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const bars = (paused) => Array.from({ length: 42 }, (_, i) => {
+      const a = Math.abs(Math.sin(i * 0.62 + 0.8) * Math.sin(i * 0.21 + 1.7));
+      const env = 0.25 + 0.75 * (i / 41);
+      const h = Math.round(6 + a * env * 104);
+      return { s: 'height:' + h + 'px', c: paused ? '' : (i < 14 ? 'dm' : '') };
+    });
+    const lvl = (n, hot) => Array.from({ length: 24 }, (_, i) => (i < n ? (hot && i >= 20 ? 'hot' : 'on') : ''));
+    const phones = [];
+    ['L', 'D'].forEach((cls) => {
+      const base = { cls, bc: cls === 'L' ? '' : 'd', theme: cls === 'L' ? 'Светлая' : 'Тёмная' };
+      phones.push({ ...base, label: 'идёт запись', live: true, pause: false, confirm: false, tc: 'var(--tx)', wc: 'rec', bars: bars(false), lvl: lvl(14, false), lvlText: 'хороший', pauseLabel: 'Пауза', micc: '', lv: '.55' });
+      phones.push({ ...base, label: 'пауза', live: false, pause: true, confirm: false, tc: 'var(--tx2)', wc: 'paused', bars: bars(true), lvl: lvl(0, false), lvlText: 'пауза', pauseLabel: 'Продолжить', micc: 'idle', lv: '0' });
+      phones.push({ ...base, label: 'отмена: подтверждение', live: true, pause: false, confirm: true, tc: 'var(--tx)', wc: 'rec', bars: bars(false), lvl: lvl(22, true), lvlText: 'слишком громко', pauseLabel: 'Пауза', micc: '', lv: '1' });
+    });
+    return { phones };
+  }
+}
+</script>
+</body>
+</html>

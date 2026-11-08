@@ -9,6 +9,8 @@ java {
 dependencies {
     // compileOnly: в рантайме AGP берётся из classpath корневого проекта (plugins { ... apply false }).
     compileOnly(libs.android.gradlePlugin)
+    // Классы задач detekt для конвенции steno.detekt (сам DetektPlugin не применяем).
+    implementation(libs.detekt.gradle.plugin)
 }
 
 gradlePlugin {

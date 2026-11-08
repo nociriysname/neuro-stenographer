@@ -21,9 +21,10 @@ class PcmAudio(
         return PcmAudio(samples.copyOfRange(from, to), sampleRate)
     }
 
-    private fun msToSample(ms: Long): Int = (ms * sampleRate / 1000L).toInt()
+    private fun msToSample(ms: Long): Int = (ms * sampleRate / MS_PER_SECOND).toInt()
 
     companion object {
         const val SAMPLE_RATE_16K = 16_000
+        private const val MS_PER_SECOND = 1_000L
     }
 }

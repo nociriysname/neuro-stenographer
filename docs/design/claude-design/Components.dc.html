@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Компоненты: базовые</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.pn{width:640px;border:1px solid var(--line2);border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:28px}
+.cs{display:flex;flex-direction:column;gap:12px}
+.cs>.h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.rw{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.seg>button{border:0;background:none;cursor:pointer}
+.seg>button.on{background:var(--bg)}
+.ib svg,.btn svg{pointer-events:none}
+.ti{width:44px;height:44px;border-radius:13px;background:var(--p-soft);color:var(--p-ink);display:flex;align-items:center;justify-content:center;flex:none}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-record" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.25"/><circle cx="12" cy="12" r="3.25" fill="currentColor"/></symbol>
+<symbol id="i-import" viewBox="0 0 24 24"><path d="M12 4v10M8 10.5l4 4 4-4M5 15v2.5A1.5 1.5 0 0 0 6.5 19h11a1.5 1.5 0 0 0 1.5-1.5V15"/></symbol>
+<symbol id="i-audiofile" viewBox="0 0 24 24"><path d="M7 3.5h6.5L19 9v10.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z"/><path d="M13.5 3.5V9H19"/><path d="M9.5 15v-1.5M12 17v-5.5M14.5 15v-1.5"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5M9 20.5h6"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4.5 19.5l.8-3.9L16.6 4.3a1.7 1.7 0 0 1 2.4 0l.7.7a1.7 1.7 0 0 1 0 2.4L8.4 18.7l-3.9.8zM14.5 6.5l3 3"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l4.5 4.5"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.25" fill="currentColor"/><circle cx="12" cy="12" r="1.25" fill="currentColor"/><circle cx="18.5" cy="12" r="1.25" fill="currentColor"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6.5A2.5 2.5 0 0 0 13 4H6.5A2.5 2.5 0 0 0 4 6.5V13a2.5 2.5 0 0 0 2.5 2.5h2"/></symbol>
+<symbol id="i-delete" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2M6.5 7l.8 11.2a1.5 1.5 0 0 0 1.5 1.3h6.4a1.5 1.5 0 0 0 1.5-1.3L17.5 7M10 11v5M14 11v5"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+<symbol id="i-skip-silence" viewBox="0 0 24 24"><path d="M3.5 10v4M7 7.5v9M17 7.5v9M20.5 10v4M10 12h4M12.5 10l2 2-2 2"/></symbol>
+<symbol id="i-chip" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></symbol>
+<symbol id="i-warning" viewBox="0 0 24 24"><path d="M12 4.2l8.5 14.6a.9.9 0 0 1-.8 1.4H4.3a.9.9 0 0 1-.8-1.4L12 4.2z"/><path d="M12 10v4.2"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></symbol>
+</defs></svg>
+<div class="board" style="width:1440px;height:1900px;padding:64px;gap:32px">
+  <div class="col g8">
+    <div class="cap"><b>Компоненты · 1/2</b> Кнопки, поля, контролы, строки, бейджи</div>
+    <h1 style="font-size:40px;line-height:46px">Свои компоненты вместо Material 3</h1>
+    <div class="sub" style="max-width:980px;font-size:17px;line-height:26px">Скругления 10–18 dp вместо «пилюль», тонкие обводки и мягкие тени вместо тональных подложек. Высоты заданы как min-height, зона касания не меньше 48 dp.</div>
+  </div>
+  <div class="fx g32" style="align-items:flex-start">
+    <sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+      <div class="pn ns {{t.cls}}">
+        <div class="fx ai jb"><div class="t-ti">{{t.name}}</div></div>
+
+        <div class="cs">
+          <div class="h"><div class="t-su">Кнопки</div><div class="t-cp c2">lg 56 · md 48 · sm 40 (+зона 48) · радиус 16 / 14 / 12</div></div>
+          <div class="rw">
+            <button class="btn p lg"><svg class="ic" aria-hidden="true"><use href="#i-mic"></use></svg>Записать разговор</button>
+            <button class="btn s"><svg class="ic" aria-hidden="true"><use href="#i-import"></use></svg>Импортировать</button>
+            <button class="btn p sm">Применить</button>
+          </div>
+          <div class="rw">
+            <button class="btn p">Расшифровать</button>
+            <button class="btn s">Отмена</button>
+            <button class="btn t">Подробнее</button>
+            <button class="btn d"><svg class="ic" aria-hidden="true"><use href="#i-delete"></use></svg>Удалить</button>
+            <button class="btn dt">Сбросить</button>
+          </div>
+          <div class="t-cp c2">Состояния основной кнопки: обычная · нажата · фокус · недоступна</div>
+          <div class="rw">
+            <button class="btn p">Обычная</button>
+            <button class="btn p press">Нажата</button>
+            <button class="btn p foc">Фокус</button>
+            <button class="btn p dis">Недоступна</button>
+          </div>
+          <div class="rw">
+            <button class="btn s press">Нажата</button>
+            <button class="btn s foc">Фокус</button>
+            <button class="btn s dis">Недоступна</button>
+            <button class="btn d dis">Удалить</button>
+          </div>
+        </div>
+
+        <div class="cs">
+          <div class="h"><div class="t-su">Иконочные кнопки</div><div class="t-cp c2">48×48 · радиус 14 · иконка 24</div></div>
+          <div class="rw">
+            <button class="ib" aria-label="Поиск"><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg></button>
+            <button class="ib press" aria-label="Копировать"><svg class="ic" aria-hidden="true"><use href="#i-copy"></use></svg></button>
+            <button class="ib g" aria-label="Ещё"><svg class="ic" aria-hidden="true"><use href="#i-more"></use></svg></button>
+            <button class="ib p" aria-label="Правка"><svg class="ic" aria-hidden="true"><use href="#i-edit"></use></svg></button>
+            <button class="ib dis" aria-label="Удалить"><svg class="ic" aria-hidden="true"><use href="#i-delete"></use></svg></button>
+            <button class="ib s" aria-label="Закрыть"><svg class="ic s" aria-hidden="true"><use href="#i-close"></use></svg></button>
+          </div>
+        </div>
+
+        <div class="cs">
+          <div class="h"><div class="t-su">Сегменты, переключатель, выбор</div><div class="t-cp c2">сегмент 48 · переключатель 52×30</div></div>
+          <div class="seg"><button class="">Авто</button><button class="on">2</button><button class="">3</button><button class="">4+</button></div>
+          <div class="rw" style="gap:24px">
+            <div class="fx ai g8"><button class="sw" role="switch" aria-checked="false" aria-label="Выключено"></button><span class="t-bs">Выкл.</span></div>
+            <div class="fx ai g8"><button class="sw on" role="switch" aria-checked="true" aria-label="Включено"></button><span class="t-bs">Вкл.</span></div>
+            <div class="fx ai g8"><button class="sw on dis" role="switch" aria-checked="true" aria-disabled="true" aria-label="Недоступно"></button><span class="t-bs c3">Недоступно</span></div>
+          </div>
+          <div class="rw g8">
+            <button class="tg on">1×</button><button class="tg">1.5×</button><button class="tg">2×</button>
+            <button class="tg on"><svg class="ic s" aria-hidden="true"><use href="#i-skip-silence"></use></svg>Без пауз</button>
+          </div>
+          <div class="opt on"><span class="rd"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg></span><div class="f1"><div class="t-lg">С пунктуацией</div><div class="t-cp c2">Точки и запятые расставит модель</div></div></div>
+          <div class="opt"><span class="rd"></span><div class="f1"><div class="t-lg">Без пунктуации</div><div class="t-cp c2">Быстрее, текст без знаков</div></div></div>
+        </div>
+
+        <div class="cs">
+          <div class="h"><div class="t-su">Поле поиска</div><div class="t-cp c2">48 · радиус 14 · фокус — обводка + ореол</div></div>
+          <label class="fld s1"><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg><input type="text" placeholder="Поиск по тексту"></label>
+          <label class="fld f"><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg><input type="text" value="бюджет"><span class="t-cp c2 num nw">2 из 5</span><button class="ib g s" aria-label="Очистить"><svg class="ic s" aria-hidden="true"><use href="#i-close"></use></svg></button></label>
+        </div>
+
+        <div class="cs">
+          <div class="h"><div class="t-su">Строка списка и карточка</div><div class="t-cp c2">строка ≥ 64 · карточка радиус 18 · обводка 1</div></div>
+          <div class="col">
+            <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg">Планёрка отдела разработки</div><div class="t-cp c2">12 янв · 48:12 · 3 говорящих</div></div><svg class="ic c3" aria-hidden="true"><use href="#i-chevron"></use></svg></div>
+            <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg">Интервью с редактором</div><div class="t-cp c2">10 янв · 1:07:33 · 2 говорящих</div></div><svg class="ic c3" aria-hidden="true"><use href="#i-chevron"></use></svg></div>
+          </div>
+          <div class="card fx g12 ai">
+            <span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span>
+            <div class="f1"><div class="t-lg">лекция_по_нейросетям.m4a</div><div class="t-cp c2 num">54:20 · M4A · 52 МБ</div></div>
+            <span class="bdg ok"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg>Готов</span>
+          </div>
+        </div>
+
+        <div class="cs">
+          <div class="h"><div class="t-su">Бейдж спикера и метка эмоции</div><div class="t-cp c2">скруглённый квадрат 24 / 32 / 40 · радиус 8 / 10 / 13</div></div>
+          <div class="rw g8">
+            <span class="sb k1">1</span><span class="sb k2">2</span><span class="sb k3">3</span><span class="sb k4">4</span><span class="sb k5">5</span><span class="sb k6">6</span><span class="sb k7">7</span><span class="sb k8">8</span>
+          </div>
+          <div class="rw g12"><span class="sb s k1">А</span><span class="sb k2">Б</span><span class="sb l k4">В</span><span class="t-cp c2">24 · 32 · 40, внутри цифра или инициал</span></div>
+          <div class="rw g8">
+            <span class="em e-n"><i></i>нейтрально</span><span class="em e-j"><i></i>радость</span><span class="em e-r"><i></i>раздражение</span><span class="em e-s"><i></i>грусть</span><span class="em e-u"><i></i>удивление</span>
+          </div>
+          <div class="rw g8">
+            <span class="bdg ok"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg>Модели готовы</span>
+            <span class="bdg rec"><span class="dot pulse"></span>Идёт запись</span>
+            <span class="bdg warn"><svg class="ic s" aria-hidden="true"><use href="#i-warning"></use></svg>Внимание</span>
+            <span class="bdg err">Ошибка</span>
+            <span class="bdg p"><svg class="ic s" aria-hidden="true"><use href="#i-chip"></use></svg>На устройстве</span>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ cls: 'L', name: 'Светлая тема' }, { cls: 'D', name: 'Тёмная тема' }] };
+  }
+}
+</script>
+</body>
+</html>

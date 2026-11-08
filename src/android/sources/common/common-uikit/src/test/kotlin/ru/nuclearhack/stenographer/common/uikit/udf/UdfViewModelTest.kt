@@ -36,8 +36,8 @@ class UdfViewModelTest {
 
     @Test
     fun `timestamps are compact`() {
-        assertEquals("00:01.2", formatTimestamp(1_250))
-        assertEquals("02:05.0", formatTimestamp(125_000))
+        assertEquals("0:01", formatTimestamp(1_250))
+        assertEquals("2:05", formatTimestamp(125_000))
         assertEquals("1:02:05", formatTimestamp(3_725_010))
     }
 }

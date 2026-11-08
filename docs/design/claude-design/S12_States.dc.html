@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Состояния</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.L .toast .ok{color:#7BE0A8}.L .toast .er{color:#FF9C93}.L .toast .in{color:#8CCBFB}
+.D .toast .ok{color:#17703F}.D .toast .er{color:#B02F2F}.D .toast .in{color:#0F5C98}
+.ti{width:44px;height:44px;border-radius:13px;background:var(--p-soft);color:var(--p-ink);display:flex;align-items:center;justify-content:center;flex:none}
+.stack{position:absolute;left:16px;right:16px;bottom:20px;display:flex;flex-direction:column;gap:8px}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-warning" viewBox="0 0 24 24"><path d="M12 4.2l8.5 14.6a.9.9 0 0 1-.8 1.4H4.3a.9.9 0 0 1-.8-1.4L12 4.2z"/><path d="M12 10v4.2"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.9" r=".6" fill="currentColor"/></symbol>
+<symbol id="i-audiofile" viewBox="0 0 24 24"><path d="M7 3.5h6.5L19 9v10.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z"/><path d="M13.5 3.5V9H19"/><path d="M9.5 15v-1.5M12 17v-5.5M14.5 15v-1.5"/></symbol>
+<symbol id="i-import" viewBox="0 0 24 24"><path d="M12 4v10M8 10.5l4 4 4-4M5 15v2.5A1.5 1.5 0 0 0 6.5 19h11a1.5 1.5 0 0 0 1.5-1.5V15"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+<symbol id="i-chip" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5M9 20.5h6"/></symbol>
+</defs></svg>
+<div class="board" style="width:2024px;height:1810px">
+  <div class="col g4"><div class="cap"><b>Экран 12</b> Состояния · ошибки, скелетоны, тосты</div><h1>Формат не поддерживается, модель не найдена, нет микрофона, загрузка, уведомления</h1></div>
+  <div class="grid">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="10">
+      <div class="cell">
+        <div class="cap"><b class="{{p.bc}}">{{p.theme}}</b>{{p.label}}</div>
+        <div class="ph ns {{p.cls}}">
+
+          <sc-if value="{{p.err}}" hint-placeholder-val="{{ true }}">
+            <div class="fx ai" style="padding:8px 4px 0;min-height:64px"><button class="ib g" aria-label="Закрыть"><svg class="ic" aria-hidden="true"><use href="#i-close"></use></svg></button></div>
+            <div class="col ai jc f1" style="padding:0 24px;text-align:center">
+              <img class="ill" src="{{p.img}}" alt="{{p.alt}}" style="width:256px">
+              <div class="t-ti" style="margin-top:12px">{{p.title}}</div>
+              <div class="t-bd c2" style="margin-top:8px">{{p.body}}</div>
+            </div>
+            <div class="col g8" style="padding:8px 20px 24px"><button class="btn p lg blk">{{p.b1}}</button><button class="btn s blk">{{p.b2}}</button></div>
+          </sc-if>
+
+          <sc-if value="{{p.skel}}" hint-placeholder-val="{{ false }}">
+            <div class="fx ai g12" style="padding:12px 20px 8px;min-height:68px"><div class="sk" style="width:40px;height:40px;border-radius:12px"></div><div class="f1 col g8"><div class="sk" style="height:16px;width:70%"></div><div class="sk" style="height:12px;width:45%"></div></div></div>
+            <div class="bar ind sm" style="margin:0 20px"><i></i></div>
+            <div class="col g20" style="padding:20px">
+              <div class="col g8"><div class="fx ai g8"><div class="sk" style="width:24px;height:24px;border-radius:8px"></div><div class="sk" style="width:64px;height:14px"></div><div class="sk" style="width:90px;height:12px;margin-left:auto"></div></div><div class="sk" style="height:14px"></div><div class="sk" style="height:14px;width:94%"></div><div class="sk" style="height:14px;width:58%"></div></div>
+              <div class="col g8"><div class="fx ai g8"><div class="sk" style="width:24px;height:24px;border-radius:8px"></div><div class="sk" style="width:52px;height:14px"></div><div class="sk" style="width:90px;height:12px;margin-left:auto"></div></div><div class="sk" style="height:14px"></div><div class="sk" style="height:14px;width:72%"></div></div>
+              <div class="col g8"><div class="fx ai g8"><div class="sk" style="width:24px;height:24px;border-radius:8px"></div><div class="sk" style="width:70px;height:14px"></div><div class="sk" style="width:90px;height:12px;margin-left:auto"></div></div><div class="sk" style="height:14px"></div><div class="sk" style="height:14px;width:90%"></div><div class="sk" style="height:14px;width:40%"></div></div>
+              <div class="col g8"><div class="fx ai g8"><div class="sk" style="width:24px;height:24px;border-radius:8px"></div><div class="sk" style="width:56px;height:14px"></div></div><div class="sk" style="height:14px;width:86%"></div><div class="sk" style="height:14px;width:62%"></div></div>
+            </div>
+            <div class="mp" style="margin-top:auto"><div class="fx ai g12"><div class="sk" style="width:36px;height:12px"></div><div class="sk f1" style="height:6px"></div><div class="sk" style="width:36px;height:12px"></div></div><div class="fx ai g12"><div class="sk f1" style="height:48px;border-radius:14px"></div><div class="sk" style="width:56px;height:56px;border-radius:18px"></div><div class="sk" style="width:48px;height:48px;border-radius:14px"></div></div></div>
+          </sc-if>
+
+          <sc-if value="{{p.toast}}" hint-placeholder-val="{{ false }}">
+            <div class="top"><div class="f1"><div class="ey">5 расшифровок</div><h2>История</h2></div></div>
+            <div class="pad col">
+              <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Планёрка отдела разработки</div><div class="t-cp c2 num">6 ноя · 48:12</div></div></div>
+              <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Интервью с редактором</div><div class="t-cp c2 num">4 ноя · 1:07:33</div></div></div>
+              <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Лекция по нейросетям</div><div class="t-cp c2 num">2 ноя · 54:20</div></div></div>
+            </div>
+            <div class="stack">
+              <div class="toast"><svg class="ic ok" aria-hidden="true"><use href="#i-check"></use></svg><span>Протокол скопирован</span><span class="tb">Отменить</span></div>
+              <div class="toast"><svg class="ic in" aria-hidden="true"><use href="#i-info"></use></svg><span>Расшифровка удалена</span><span class="tb">Вернуть</span></div>
+              <div class="toast"><svg class="ic er" aria-hidden="true"><use href="#i-warning"></use></svg><span>Не удалось сохранить файл</span><span class="tb">Повторить</span></div>
+              <div class="toast" style="padding-right:16px"><svg class="ic in" aria-hidden="true"><use href="#i-chip"></use></svg><span>Модели готовы, интернет не нужен</span></div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2024,"height":1810}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const E = (label, img, alt, title, body, b1, b2) => ({ label, err: true, skel: false, toast: false, img, alt, title, body, b1, b2 });
+    const states = [
+      E('формат не поддерживается', '/_blob/9f1910f5fd930be1ab8a9468ef666faf', 'Котёнок удивлён файлом с крестиком', 'Этот формат не читается', 'Файл «встреча.mkv» нельзя расшифровать. Подходят MP3, M4A, WAV, OGG и FLAC.', 'Выбрать другой файл', 'Закрыть'),
+      E('модель не найдена', '/_blob/071a5b6ff8837098006d3e7c47c2bddf', 'Котёнок смотрит на пустое место для модели', 'Модель не найдена', 'Файлы нейросетей пропали из выбранной папки. Скопируйте их заново — около 400 МБ, интернет не нужен.', 'Скопировать заново', 'Выбрать другое место'),
+      E('нет доступа к микрофону', '/_blob/9964f738ba4710579076c67ec15d6313', 'Котёнок с перечёркнутым микрофоном', 'Нет доступа к микрофону', 'Без него запись не работает. Разрешите доступ в настройках Android — импорт файлов доступен и сейчас.', 'Открыть настройки', 'Импортировать файл'),
+      { label: 'скелетоны загрузки', err: false, skel: true, toast: false },
+      { label: 'тосты', err: false, skel: false, toast: true }
+    ];
+    const phones = [];
+    ['L', 'D'].forEach((cls) => states.forEach((s) => phones.push({ ...s, cls, bc: cls === 'L' ? '' : 'd', theme: cls === 'L' ? 'Светлая' : 'Тёмная' })));
+    return { phones };
+  }
+}
+</script>
+</body>
+</html>

@@ -5,11 +5,27 @@ plugins {
 
 android {
     namespace = "ru.nuclearhack.stenographer.core.asr"
+
+    defaultConfig {
+        // В AAR sherpa-onnx библиотеки под 4 ABI, нам нужен только arm64 (как у диаризации).
+        ndk { abiFilters += "arm64-v8a" }
+    }
+
+    // Веса лежат в assets модуля и попадают в APK инструментальных тестов: без сжатия копируются быстрее.
+    androidResources {
+        noCompress += "onnx"
+    }
 }
 
 dependencies {
     implementation(projects.sources.core.coreDomain)
+    implementation(projects.sources.common.commonModels)
+    implementation(libs.kotlinx.coroutines.android)
 
-    // Следующий шаг: AAR sherpa-onnx (GitHub Releases k2-fsa/sherpa-onnx, v2.0.1, не Maven Central)
-    // + веса sherpa-onnx-nemo-transducer-punct-giga-am-v3-russian-2025-12-16 в assets.
+    // sherpa-onnx с ONNX Runtime внутри. AAR из GitHub Releases кладёт tools/fetch_models.sh; POM у него нет,
+    // поэтому тип артефакта указываем явно.
+    implementation(variantOf(libs.sherpa.onnx) { artifactType("aar") })
+
+    // Инструментальный тест декодирует запись тем же декодером, что и приложение.
+    androidTestImplementation(projects.sources.common.commonAudio)
 }

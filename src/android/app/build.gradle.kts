@@ -12,6 +12,12 @@ android {
         applicationId = "ru.nuclearhack.stenographer"
         versionCode = 1
         versionName = "0.1.0"
+        ndk { abiFilters += "arm64-v8a" }
+    }
+
+    // Веса моделей лежат в assets без сжатия: копируются на устройство быстро и без распаковки в память.
+    androidResources {
+        noCompress += listOf("gguf", "onnx")
     }
 
     buildTypes {
@@ -27,6 +33,7 @@ dependencies {
     // Composition root видит все слои: здесь Metro собирает граф из @Contributes* всех модулей.
     implementation(projects.sources.common.commonUikit)
     implementation(projects.sources.common.commonAudio)
+    implementation(projects.sources.common.commonModels)
     implementation(projects.sources.core.coreModel)
     implementation(projects.sources.core.coreDomain)
     implementation(projects.sources.core.coreData)
@@ -35,12 +42,15 @@ dependencies {
     implementation(projects.sources.core.coreLlm)
     implementation(projects.sources.feature.featureHome)
     implementation(projects.sources.feature.featureTranscript)
+    implementation(projects.sources.feature.featureOnboarding)
+    implementation(projects.sources.feature.featureSettings)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
 

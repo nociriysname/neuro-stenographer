@@ -1,6 +1,5 @@
 package ru.nuclearhack.stenographer.core.data.export
 
-import java.util.Locale
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,6 +8,7 @@ import ru.nuclearhack.stenographer.core.domain.repository.TranscriptFormat
 import ru.nuclearhack.stenographer.core.model.SpeakerId
 import ru.nuclearhack.stenographer.core.model.Transcript
 import ru.nuclearhack.stenographer.core.model.Utterance
+import java.util.Locale
 
 /** DTO строго по ТЗ (стр. 15): имена полей и типы менять нельзя — по ним считают метрики. */
 @Serializable
@@ -58,17 +58,25 @@ internal object TranscriptFormatter {
     }
 
     fun toSrt(transcript: Transcript): String = transcript.utterances
-        .mapIndexed { index, it ->
-            "${index + 1}\n${timestamp(it.startMs, ',')} --> ${timestamp(it.endMs, ',')}\n${it.speaker.value}: ${it.text}\n"
+        .mapIndexed { index, utterance ->
+            val start = timestamp(utterance.startMs, ',')
+            val end = timestamp(utterance.endMs, ',')
+            "${index + 1}\n$start --> $end\n${utterance.speaker.value}: ${utterance.text}\n"
         }
         .joinToString(separator = "\n")
 
     /** `HH:MM:SS.mmm`; SRT требует запятую перед миллисекундами. */
     private fun timestamp(ms: Long, millisSeparator: Char): String {
-        val hours = ms / 3_600_000
-        val minutes = ms / 60_000 % 60
-        val seconds = ms / 1_000 % 60
-        val millis = ms % 1_000
+        val hours = ms / MS_PER_HOUR
+        val minutes = ms / MS_PER_MINUTE % MINUTES_PER_HOUR
+        val seconds = ms / MS_PER_SECOND % SECONDS_PER_MINUTE
+        val millis = ms % MS_PER_SECOND
         return String.format(Locale.ROOT, "%02d:%02d:%02d%c%03d", hours, minutes, seconds, millisSeparator, millis)
     }
+
+    private const val MS_PER_SECOND = 1_000L
+    private const val MS_PER_MINUTE = 60_000L
+    private const val MS_PER_HOUR = 3_600_000L
+    private const val SECONDS_PER_MINUTE = 60L
+    private const val MINUTES_PER_HOUR = 60L
 }

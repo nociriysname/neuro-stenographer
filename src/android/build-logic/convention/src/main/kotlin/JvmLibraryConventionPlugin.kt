@@ -10,6 +10,7 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("org.jetbrains.kotlin.jvm")
+            pluginManager.apply("steno.detekt")
 
             extensions.configure<JavaPluginExtension> {
                 toolchain.languageVersion.set(JavaLanguageVersion.of(STENO_JAVA_TOOLCHAIN))

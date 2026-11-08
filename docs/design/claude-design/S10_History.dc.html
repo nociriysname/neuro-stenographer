@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>История</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ti{width:44px;height:44px;border-radius:13px;background:var(--p-soft);color:var(--p-ink);display:flex;align-items:center;justify-content:center;flex:none}
+.gh{display:flex;align-items:center;min-height:40px;padding-top:8px}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l4.5 4.5"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.25" fill="currentColor"/><circle cx="12" cy="12" r="1.25" fill="currentColor"/><circle cx="18.5" cy="12" r="1.25" fill="currentColor"/></symbol>
+<symbol id="i-audiofile" viewBox="0 0 24 24"><path d="M7 3.5h6.5L19 9v10.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z"/><path d="M13.5 3.5V9H19"/><path d="M9.5 15v-1.5M12 17v-5.5M14.5 15v-1.5"/></symbol>
+<symbol id="i-speaker" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.75"/><path d="M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5"/></symbol>
+<symbol id="i-delete" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2M6.5 7l.8 11.2a1.5 1.5 0 0 0 1.5 1.3h6.4a1.5 1.5 0 0 0 1.5-1.3L17.5 7M10 11v5M14 11v5"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M4.5 11L12 4.5l7.5 6.5v8a1 1 0 0 1-1 1h-4v-5.5h-5V19.5h-4a1 1 0 0 1-1-1v-8z"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4.5v3.7h3.7M12 8v4.2l2.8 1.8"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5M9 20.5h6"/></symbol>
+<symbol id="i-import" viewBox="0 0 24 24"><path d="M12 4v10M8 10.5l4 4 4-4M5 15v2.5A1.5 1.5 0 0 0 6.5 19h11a1.5 1.5 0 0 0 1.5-1.5V15"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+</defs></svg>
+<div class="board" style="width:1240px;height:1810px">
+  <div class="col g4"><div class="cap"><b>Экран 10</b> История · список, пустое состояние, удаление с подтверждением</div><h1>Название, дата, длительность, число спикеров · поиск</h1></div>
+  <div class="grid">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="6">
+      <div class="cell">
+        <div class="cap"><b class="{{p.bc}}">{{p.theme}}</b>{{p.label}}</div>
+        <div class="ph ns {{p.cls}}">
+          <div class="top"><div class="f1"><div class="ey">{{p.count}}</div><h2>История</h2></div></div>
+
+          <sc-if value="{{p.list}}" hint-placeholder-val="{{ true }}">
+            <div class="pad" style="margin-top:4px"><label class="fld s1"><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg><input type="text" placeholder="Поиск по названию и тексту" aria-label="Поиск"></label></div>
+            <div class="pad col f1" style="min-height:0;overflow:hidden">
+              <div class="gh t-lb c2">На этой неделе</div>
+              <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Планёрка отдела разработки</div><div class="t-cp c2 num">6 ноя · 48:12 · <span style="white-space:nowrap">3 говорящих</span></div></div><button class="ib g s" aria-label="Ещё"><svg class="ic s" aria-hidden="true"><use href="#i-more"></use></svg></button></div>
+              <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Интервью с редактором</div><div class="t-cp c2 num">4 ноя · 1:07:33 · <span style="white-space:nowrap">2 говорящих</span></div></div><button class="ib g s" aria-label="Ещё"><svg class="ic s" aria-hidden="true"><use href="#i-more"></use></svg></button></div>
+              <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Лекция по нейросетям</div><div class="t-cp c2 num">2 ноя · 54:20 · <span style="white-space:nowrap">1 говорящий</span></div></div><button class="ib g s" aria-label="Ещё"><svg class="ic s" aria-hidden="true"><use href="#i-more"></use></svg></button></div>
+              <div class="gh t-lb c2">Раньше</div>
+              <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Созвон с заказчиком</div><div class="t-cp c2 num">30 окт · 23:05 · <span style="white-space:nowrap">2 говорящих</span></div></div><button class="ib g s" aria-label="Ещё"><svg class="ic s" aria-hidden="true"><use href="#i-more"></use></svg></button></div>
+              <div class="li"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-audiofile"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Совет котят: заседание №7</div><div class="t-cp c2 num">28 окт · 1:12:40 · <span style="white-space:nowrap">4 говорящих</span></div></div><button class="ib g s" aria-label="Ещё"><svg class="ic s" aria-hidden="true"><use href="#i-more"></use></svg></button></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{p.empty}}" hint-placeholder-val="{{ false }}">
+            <div class="col ai jc f1" style="padding:0 28px;text-align:center">
+              <img class="ill" src="/_blob/dd7f301223d32af49c33dced8c59fe36" alt="Котёнок выглядывает из пустой коробки" style="width:240px">
+              <div class="t-ti" style="margin-top:12px">Здесь пока пусто</div>
+              <div class="t-bd c2" style="margin-top:8px">Запишите разговор или импортируйте файл — расшифровка появится в истории.</div>
+              <div class="col g8" style="margin-top:20px;align-self:stretch"><button class="btn p blk"><svg class="ic" aria-hidden="true"><use href="#i-mic"></use></svg>Записать разговор</button><button class="btn s blk"><svg class="ic" aria-hidden="true"><use href="#i-import"></use></svg>Импортировать файл</button></div>
+            </div>
+          </sc-if>
+
+          <div class="nav" style="margin-top:auto">
+            <div class="it"><svg class="ic" aria-hidden="true"><use href="#i-home"></use></svg>Главная</div>
+            <div class="it on"><svg class="ic" aria-hidden="true"><use href="#i-history"></use></svg>История</div>
+            <div class="mid"><span class="rb"><svg class="ic l" aria-hidden="true"><use href="#i-mic"></use></svg></span>Запись</div>
+            <div class="it"><svg class="ic" aria-hidden="true"><use href="#i-import"></use></svg>Импорт</div>
+            <div class="it"><svg class="ic" aria-hidden="true"><use href="#i-settings"></use></svg>Настройки</div>
+          </div>
+
+          <sc-if value="{{p.confirm}}" hint-placeholder-val="{{ false }}">
+            <div class="scrim"></div>
+            <div class="dlg">
+              <div class="t-su">Удалить расшифровку?</div>
+              <div class="t-bd c2">«Лекция по нейросетям» и её аудио будут удалены с устройства. Это нельзя отменить.</div>
+              <div class="fx g12" style="margin-top:8px"><button class="btn s f1">Отмена</button><button class="btn d f1"><svg class="ic" aria-hidden="true"><use href="#i-delete"></use></svg>Удалить</button></div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1240,"height":1810}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const phones = [];
+    ['L', 'D'].forEach((cls) => {
+      const b = { cls, bc: cls === 'L' ? '' : 'd', theme: cls === 'L' ? 'Светлая' : 'Тёмная' };
+      phones.push({ ...b, label: 'список', list: true, empty: false, confirm: false, count: '5 расшифровок' });
+      phones.push({ ...b, label: 'пусто', list: false, empty: true, confirm: false, count: 'нет расшифровок' });
+      phones.push({ ...b, label: 'удаление: подтверждение', list: true, empty: false, confirm: true, count: '5 расшифровок' });
+    });
+    return { phones };
+  }
+}
+</script>
+</body>
+</html>

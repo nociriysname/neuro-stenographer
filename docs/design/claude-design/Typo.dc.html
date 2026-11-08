@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Типографика и формы</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.sec{border:1px solid var(--line2);border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:20px}
+.tr{display:flex;align-items:center;gap:24px;min-height:64px;padding:12px 0;border-bottom:1px solid var(--line)}
+.tr:last-child{border-bottom:0}
+.tk{width:200px;flex:none}
+.sp{height:20px;border-radius:5px;background:var(--p);flex:none}
+.rq{width:84px;height:84px;background:var(--p-soft);border:2px solid var(--p);flex:none}
+.shb{width:150px;height:96px;border-radius:18px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:flex-end;padding:12px;font-size:12px;font-weight:600;color:var(--tx2)}
+.code{margin:0;padding:20px;border-radius:16px;background:var(--s1);border:1px solid var(--line);font-family:ui-monospace,'JetBrains Mono',Menlo,monospace;font-size:13px;line-height:20px;color:var(--tx);white-space:pre-wrap}
+</style>
+</helmet>
+<div class="board" style="width:1440px;height:2100px;padding:64px;gap:32px">
+  <div class="col g8">
+    <div class="cap"><b>Токены · 2/2</b> Типографика, сетка, формы, тени, движение</div>
+    <h1 style="font-size:40px;line-height:46px">Golos Text, сетка 4 dp, спокойная геометрия</h1>
+  </div>
+
+  <div class="sec ns L">
+    <div class="t-ti">Типографика — Golos Text 400 / 500 / 600 / 700</div>
+    <div class="col">
+      <sc-for list="{{types}}" as="r" hint-placeholder-count="9">
+        <div class="tr">
+          <div class="tk"><div class="t-lb">{{r.tok}}</div><div class="t-cp c2 num">{{r.spec}}</div></div>
+          <div class="f1" style="{{r.css}}">{{r.sample}}</div>
+          <div class="t-cp c2" style="width:230px;flex:none">{{r.use}}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div class="fx g32" style="align-items:flex-start">
+      <div class="f1 col g8">
+        <div class="t-lb c2">Табличные цифры (tnum) — таймкоды не «прыгают»</div>
+        <div class="t-ti num">00:12:48 · 01:07:33 · 11:11:11</div>
+      </div>
+      <div class="f1 col g8">
+        <div class="t-lb c2">Длинные слова переносятся, а не ломают вёрстку</div>
+        <div class="t-su" style="width:220px;border:1px dashed var(--line2);padding:8px;border-radius:10px">Электроэнцефалографический протокол</div>
+      </div>
+      <div class="f1 col g8">
+        <div class="t-lb c2">Крупный системный шрифт: sp, до 200%</div>
+        <div class="t-bs c2">Высоты строк, кнопок и рядов заданы как min-height, а текст в sp — контролы растут вместе с шрифтом. Жёсткие высоты запрещены.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fx g32" style="align-items:stretch">
+    <div class="sec ns L" style="width:620px;flex:none">
+      <div class="t-ti">Отступы · сетка 4 dp</div>
+      <div class="col g8">
+        <sc-for list="{{spaces}}" as="s" hint-placeholder-count="10">
+          <div class="fx ai g16"><div class="t-lb num" style="width:110px">{{s.tok}}</div><div class="sp" style="width:{{s.w}}px"></div><div class="t-cp c2">{{s.use}}</div></div>
+        </sc-for>
+      </div>
+      <div class="t-bs c2">Поля экрана 20 dp (на 360 dp остаётся 320 dp контента), зона касания ≥ 48×48 dp, строка списка ≥ 64 dp, шаг между строками реплик 8 dp.</div>
+    </div>
+    <div class="col g32 f1">
+      <div class="sec ns L">
+        <div class="t-ti">Радиусы — своя геометрия, без «пилюль»</div>
+        <div class="fx g16 wr">
+          <sc-for list="{{radii}}" as="r" hint-placeholder-count="6">
+            <div class="col g8" style="width:150px"><div class="rq" style="border-radius:{{r.r}}px"></div><div class="t-lb">{{r.tok}} · {{r.r}}</div><div class="t-cp c2">{{r.use}}</div></div>
+          </sc-for>
+        </div>
+      </div>
+      <div class="fx g32 f1">
+        <sc-for list="{{shthemes}}" as="t" hint-placeholder-count="2">
+          <div class="sec ns {{t.cls}} f1" style="padding:24px">
+            <div class="t-lb">{{t.name}}</div>
+            <div class="fx g12 wr">
+              <div class="shb" style="box-shadow:var(--sh1)">sh1 · карточка</div>
+              <div class="shb" style="box-shadow:var(--sh2)">sh2 · диалог, тост</div>
+              <div class="shb" style="box-shadow:var(--sh3);border-radius:18px 18px 0 0">sh3 · шит</div>
+              <div class="shb" style="box-shadow:none">hairline · 1 dp</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div class="fx g32" style="align-items:stretch">
+    <div class="sec ns L f1">
+      <div class="t-ti">Движение</div>
+      <div class="col">
+        <sc-for list="{{motion}}" as="m" hint-placeholder-count="6">
+          <div class="tr" style="min-height:52px"><div class="tk"><div class="t-lb">{{m.tok}}</div></div><div class="t-bs num" style="width:120px;flex:none">{{m.dur}}</div><div class="t-bs f1">{{m.use}}</div></div>
+        </sc-for>
+      </div>
+      <div class="fx g24 ai">
+        <div class="fx ai g8 bdg rec"><span class="dot pulse"></span>Идёт запись</div>
+        <div style="width:160px"><div class="bar ind"><i></i></div></div>
+        <div class="col g8" style="width:160px"><div class="sk" style="height:12px"></div><div class="sk" style="height:12px;width:70%"></div></div>
+        <div class="t-cp c2 f1">При системной настройке «убрать анимации» пульс и бегущая полоса заменяются статикой.</div>
+      </div>
+    </div>
+    <div class="sec ns L" style="width:500px;flex:none">
+      <div class="t-ti">Соответствие в Compose</div>
+      <pre class="code">object NsTheme {
+  val colors: NsColors      // NsLight / NsDark
+  val type: NsTypography    // display … timer
+  val space: NsSpacing      // s1 = 4.dp … s16 = 64.dp
+  val shape: NsShapes       // xs 6 … xl 26
+  val elevation: NsElevation
+  val motion: NsMotion
+}
+// Свои компоненты: NsButton, NsIconButton, NsSegmented,
+// NsSwitch, NsSearchField, NsSheet, NsDialog, NsToast,
+// NsTopBar, NsBottomBar, NsSpeakerBadge, NsEmotionTag,
+// NsWave, NsMiniPlayer, NsStepper
+// Спикеры: colors.speakers[0..7], эмоции: colors.emotion(Emotion)</pre>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const R = (tok, spec, css, sample, use) => ({ tok, spec, css, sample, use });
+    const types = [
+      R('display', '36 / 42 · 700', 'font-size:36px;line-height:42px;font-weight:700;letter-spacing:-.01em', 'Котовицкий совет', 'заголовки онбординга, пустые состояния'),
+      R('title', '24 / 30 · 700', 'font-size:24px;line-height:30px;font-weight:700', 'Протокол заседания', 'заголовок экрана'),
+      R('subtitle', '18 / 24 · 600', 'font-size:18px;line-height:24px;font-weight:600', 'Решения и поручения', 'заголовок секции, шита'),
+      R('body', '16 / 24 · 400', 'font-size:16px;line-height:24px;font-weight:400', 'Всё распознаётся на устройстве, данные никуда не уходят.', 'основной текст интерфейса'),
+      R('transcript', '17 / 28 · 400', 'font-size:17px;line-height:28px;font-weight:400', 'Давайте начнём с бюджета на следующий квартал.', 'текст реплик — длинное чтение'),
+      R('body-sm', '14 / 20 · 400', 'font-size:14px;line-height:20px;font-weight:400', 'Модели скопированы, можно работать без интернета.', 'подписи, вторичные строки'),
+      R('label', '14 / 20 · 600  ·  16 / 20 · 600', 'font-size:14px;line-height:20px;font-weight:600', 'Записать разговор', 'кнопки, названия полей, вкладки'),
+      R('caption', '12 / 16 · 500', 'font-size:12px;line-height:16px;font-weight:500;letter-spacing:.01em', 'ДАТА · 12 ЯНВАРЯ · 48 МИН', 'таймкоды, метки, не мельче 12 sp'),
+      R('timer', '64 / 68 · 600 · tnum', 'font-size:64px;line-height:68px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;font-feature-settings:\"tnum\" 1', '00:12:48', 'таймер записи')
+    ];
+    const spaces = [['space-1', 4, 'зазор иконка-текст'], ['space-2', 8, 'между метками'], ['space-3', 12, 'внутри рядов'], ['space-4', 16, 'внутри карточек'], ['space-5', 20, 'поля экрана'], ['space-6', 24, 'между блоками'], ['space-8', 32, 'секции'], ['space-10', 40, 'крупные разрывы'], ['space-12', 48, 'минимальная зона касания'], ['space-16', 64, 'высота строки списка']].map((a) => ({ tok: a[0] + ' · ' + a[1], w: a[1] * 3, use: a[2] }));
+    const radii = [['r-xs', 6, 'прогресс, маркеры'], ['r-sm', 10, 'метки, тумблеры, бейдж спикера'], ['r-md', 14, 'кнопки, поля'], ['r-lg', 18, 'карточки'], ['r-xl', 22, 'диалог'], ['r-sheet', 26, 'шит (сверху)']].map((a) => ({ tok: a[0], r: a[1], use: a[2] }));
+    const motion = [
+      ['fast', '120 мс · ease-out', 'нажатие кнопок, переключатель, ползунок'], ['base', '200 мс · cubic(.2, 0, 0, 1)', 'смена состояния, выбор в сегментах, появление тоста'],
+      ['slow', '320 мс · cubic(.05, .7, .1, 1)', 'шит, диалог, переход между шагами онбординга'], ['rec-pulse', '1400 мс · ease-in-out ∞', 'индикатор записи'],
+      ['wave', 'кадр 50 мс, сглаживание 120 мс', 'столбики волны и индикатор уровня'], ['indeterminate', '1500 мс · ease-in-out ∞', 'полоса «подготовка» без процентов'], ['skeleton', '1400 мс · linear ∞', 'скелетоны загрузки']
+    ].map((a) => ({ tok: a[0], dur: a[1], use: a[2] }));
+    return { types, spaces, radii, motion, shthemes: [{ cls: 'L', name: 'Светлая: тени мягкие' }, { cls: 'D', name: 'Тёмная: тени глубже + обводка' }] };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Переименование спикера</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.c8{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:14px;border:1px solid var(--line2);background:var(--bg);cursor:pointer}
+.c8.on{border-color:var(--p);box-shadow:inset 0 0 0 1px var(--p);background:var(--p-soft)}
+.tt{font-size:12px;line-height:16px;font-weight:500;color:var(--tx2)}
+.ut p{margin:6px 0 0}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5.5M11.5 6l-6 6 6 6"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+</defs></svg>
+<div class="board" style="width:856px;height:980px">
+  <div class="col g4"><div class="cap"><b>Экран 7</b> Переименование спикера · шит</div><h1>Имя, цвет, «применить ко всем репликам»</h1></div>
+  <div class="grid">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="2">
+      <div class="cell">
+        <div class="cap"><b class="{{p.bc}}">{{p.theme}}</b>{{p.label}}</div>
+        <div class="ph ns {{p.cls}}">
+          <div class="fx ai" style="padding:8px 4px 0;min-height:68px"><button class="ib g" aria-label="Назад"><svg class="ic" aria-hidden="true"><use href="#i-back"></use></svg></button><div class="f1 t-lg" style="padding:0 4px">Планёрка отдела разработки</div></div>
+          <div style="padding:8px">
+            <div class="ut"><div class="fx ai g8"><span class="sb s k2">С2</span><span class="t-lb">Спикер 2</span><span class="tt num">11:56 – 12:03</span></div><p class="t-tr">Опять бюджет? Мы же обсуждали его на прошлой неделе.</p></div>
+          </div>
+          <div class="scrim"></div>
+          <div class="sheet">
+            <div class="grab"></div>
+            <div class="fx ai jb"><div class="t-su">Говорящий</div><button class="ib g s" aria-label="Закрыть"><svg class="ic s" aria-hidden="true"><use href="#i-close"></use></svg></button></div>
+            <div class="col g8">
+              <label class="t-lb" for="nm-{{p.cls}}">Имя</label>
+              <div class="fld f"><span class="sb s {{p.kc}}">И</span><input id="nm-{{p.cls}}" type="text" value="Игорь Петров"></div>
+            </div>
+            <div class="col g8">
+              <div class="t-lb">Цвет</div>
+              <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+                <sc-for list="{{p.colors}}" as="c" hint-placeholder-count="8">
+                  <button class="c8 {{c.on}}" aria-label="{{c.aria}}">
+                    <sc-if value="{{c.sel}}" hint-placeholder-val="{{ false }}"><span class="sb {{c.k}}"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg></span></sc-if>
+                    <sc-if value="{{c.nsel}}" hint-placeholder-val="{{ true }}"><span class="sb {{c.k}}">{{c.n}}</span></sc-if>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+            <div class="fx ai g12" style="min-height:56px">
+              <div class="f1"><div class="t-lg">Применить ко всем репликам</div><div class="t-cp c2">14 реплик этого говорящего</div></div>
+              <button class="sw on" role="switch" aria-checked="true" aria-label="Применить ко всем репликам"></button>
+            </div>
+            <div class="col g4"><button class="btn p lg blk">Сохранить</button><button class="btn t blk">Отмена</button></div>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":856,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const colors = (sel) => Array.from({ length: 8 }, (_, i) => ({ k: 'k' + (i + 1), n: i + 1, on: i === sel ? 'on' : '', sel: i === sel, nsel: i !== sel, aria: 'Цвет ' + (i + 1) }));
+    return { phones: [
+      { cls: 'L', bc: '', theme: 'Светлая', label: 'выбран цвет 2', kc: 'k2', colors: colors(1) },
+      { cls: 'D', bc: 'd', theme: 'Тёмная', label: 'выбран цвет 4', kc: 'k4', colors: colors(3) }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

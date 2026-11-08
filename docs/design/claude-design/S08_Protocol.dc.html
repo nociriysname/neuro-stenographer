@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Протокол встречи</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.sec{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-bottom:1px solid var(--line)}
+.sh{display:flex;align-items:center;gap:10px}
+.st{width:32px;height:32px;border-radius:10px;background:var(--p-soft);color:var(--p-ink);display:flex;align-items:center;justify-content:center;flex:none}
+.dc{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:22px}
+.dc svg{margin-top:1px;color:var(--ok)}
+.tk{display:flex;gap:12px;align-items:flex-start;padding:8px 0}
+.cbx{width:22px;height:22px;border-radius:7px;border:2px solid var(--line2);flex:none;margin-top:1px}
+.fade{position:absolute;left:0;right:0;bottom:0;height:36px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5.5M11.5 6l-6 6 6 6"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6.5A2.5 2.5 0 0 0 13 4H6.5A2.5 2.5 0 0 0 4 6.5V13a2.5 2.5 0 0 0 2.5 2.5h2"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 7.5l4-4 4 4M5 13v4.5A1.5 1.5 0 0 0 6.5 19h11a1.5 1.5 0 0 0 1.5-1.5V13"/></symbol>
+<symbol id="i-protocol" viewBox="0 0 24 24"><rect x="5.5" y="5" width="13" height="15.5" rx="2"/><rect x="9" y="3" width="6" height="3.5" rx="1.2"/><path d="M9 10.5h6M9 14h6M9 17.5h3"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-tasks" viewBox="0 0 24 24"><path d="M4 6.5l1.6 1.6L8.6 5M4 12.5l1.6 1.6 3-3.1M4 18.5l1.6 1.6 3-3.1M12.5 7h7.5M12.5 13h7.5M12.5 19h7.5"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.9" r=".6" fill="currentColor"/></symbol>
+<symbol id="i-chip" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></symbol>
+<symbol id="i-speaker" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.75"/><path d="M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5"/></symbol>
+</defs></svg>
+<div class="board" style="width:856px;height:980px">
+  <div class="col g4"><div class="cap"><b>Экран 8</b> Протокол встречи от локальной LLM</div><h1>Краткое содержание, решения, задачи с ответственным · копировать и экспортировать</h1></div>
+  <div class="grid">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="2">
+      <div class="cell">
+        <div class="cap"><b class="{{p.bc}}">{{p.theme}}</b>{{p.label}}</div>
+        <div class="ph ns {{p.cls}}">
+          <div class="fx ai" style="padding:8px 4px 0;min-height:68px;gap:0">
+            <button class="ib g" aria-label="Назад"><svg class="ic" aria-hidden="true"><use href="#i-back"></use></svg></button>
+            <div class="f1" style="padding:0 4px"><div class="t-lg" style="line-height:20px">Протокол встречи</div><div class="fx ai g4" style="margin-top:2px"><svg class="ic s c2" style="width:16px;height:16px" aria-hidden="true"><use href="#i-chip"></use></svg><span class="t-cp c2">Составлен на устройстве · 6 ноября</span></div></div>
+            <button class="ib g" aria-label="Копировать протокол"><svg class="ic" aria-hidden="true"><use href="#i-copy"></use></svg></button>
+          </div>
+          <div class="scroll pad">
+            <div class="sec">
+              <div class="sh"><span class="st"><svg class="ic s" aria-hidden="true"><use href="#i-protocol"></use></svg></span><span class="t-su">Краткое содержание</span></div>
+              <p class="m0" style="font-size:15px;line-height:22px">Обсудили бюджет следующего квартала. Заказчик подтвердил финансирование, оно на 20% выше плана. Команда согласовала приоритеты и сроки первого этапа.</p>
+            </div>
+            <div class="sec">
+              <div class="sh"><span class="st"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg></span><span class="t-su">Решения</span></div>
+              <div class="dc"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg><span>Зафиксировать бюджет с учётом подтверждённого финансирования.</span></div>
+              <div class="dc"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg><span>Первый этап запускаем 1 декабря.</span></div>
+              <div class="dc"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg><span>Еженедельный созвон переносим на вторник.</span></div>
+            </div>
+            <div class="sec" style="border-bottom:0">
+              <div class="sh"><span class="st"><svg class="ic s" aria-hidden="true"><use href="#i-tasks"></use></svg></span><span class="t-su">Задачи</span><span class="bdg" style="margin-left:auto">3</span></div>
+              <div class="tk"><span class="cbx"></span><div class="f1"><div style="font-size:15px;line-height:22px">Подготовить смету по отделам</div><div class="fx ai g8" style="margin-top:4px"><span class="sb s k1">А</span><span class="t-cp c2">Анна · до 12 ноября</span></div></div></div>
+              <div class="tk"><span class="cbx"></span><div class="f1"><div style="font-size:15px;line-height:22px">Согласовать сроки с заказчиком</div><div class="fx ai g8" style="margin-top:4px"><span class="sb s k3">М</span><span class="t-cp c2">Мария · до 15 ноября</span></div></div></div>
+              <div class="tk"><span class="cbx"></span><div class="f1"><div style="font-size:15px;line-height:22px">Обновить план закупок</div><div class="fx ai g8" style="margin-top:4px"><span class="sb s k2">И</span><span class="t-cp c2">Игорь · до 20 ноября</span></div></div></div>
+            </div>
+            <div class="fade"></div>
+          </div>
+          <div class="col g8" style="padding:10px 20px 20px;border-top:1px solid var(--line)">
+            <div class="fx ai g8 c2 t-cp"><svg class="ic s" aria-hidden="true"><use href="#i-info"></use></svg>Протокол пишет небольшая модель — проверьте формулировки</div>
+            <div class="fx g12"><button class="btn s f1"><svg class="ic" aria-hidden="true"><use href="#i-copy"></use></svg>Копировать</button><button class="btn p f1"><svg class="ic" aria-hidden="true"><use href="#i-share"></use></svg>Экспорт</button></div>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":856,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { phones: [{ cls: 'L', bc: '', theme: 'Светлая', label: 'протокол готов' }, { cls: 'D', bc: 'd', theme: 'Тёмная', label: 'протокол готов' }] };
+  }
+}
+</script>
+</body>
+</html>

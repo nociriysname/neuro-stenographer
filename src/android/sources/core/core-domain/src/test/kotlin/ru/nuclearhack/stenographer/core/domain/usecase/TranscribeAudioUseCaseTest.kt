@@ -39,16 +39,30 @@ class TranscribeAudioUseCaseTest {
         }
     }
 
-    /** Возвращает по слову на фрагмент и запоминает, какие сдвиги пришли. */
+    /** Возвращает по два слова на фрагмент и запоминает сдвиги и была ли модель загружена. */
     private val recognizer = object : SpeechRecognizer {
         val offsets = mutableListOf<Long>()
+        val calledWithModelLoaded = mutableListOf<Boolean>()
+        var loads = 0
+        private var loaded = false
         override val info = EngineInfo(EngineKind.SpeechRecognition, "fake", "test", isReady = true)
         override suspend fun recognize(audio: PcmAudio, offsetMs: Long): List<RecognizedWord> {
             offsets += offsetMs
+            calledWithModelLoaded += loaded
             return listOf(
                 RecognizedWord("Мяу", offsetMs + 300, offsetMs + 700),
                 RecognizedWord("мур.", offsetMs + 2_700, offsetMs + 3_100),
             )
+        }
+
+        override suspend fun <T> withModelLoaded(block: suspend () -> T): T {
+            loads++
+            loaded = true
+            try {
+                return block()
+            } finally {
+                loaded = false
+            }
         }
     }
 
@@ -78,6 +92,8 @@ class TranscribeAudioUseCaseTest {
         val completed = assertIs<TranscriptionEvent.Completed>(events.last())
         // Один фрагмент 800–6200 мс: слова на 1100 и 3500 мс → говорящие 0 и 1.
         assertEquals(listOf(800L), recognizer.offsets)
+        assertEquals(1, recognizer.loads)
+        assertEquals(listOf(true), recognizer.calledWithModelLoaded)
         assertEquals(listOf("МЯУ", "МУР."), completed.transcript.utterances.map { it.text })
         assertEquals(listOf("speaker_1", "speaker_2"), completed.transcript.utterances.map { it.speaker.value })
         assertEquals(10_000L, completed.timings.audioDurationMs)

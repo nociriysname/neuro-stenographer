@@ -41,6 +41,16 @@ interface SpeechRecognizer {
      * Таймкоды слов возвращаются уже со сдвигом [offsetMs].
      */
     suspend fun recognize(audio: PcmAudio, offsetMs: Long): List<RecognizedWord>
+
+    /**
+     * Держит модель загруженной, пока выполняется [block]: конвейер распознаёт фрагменты один за другим,
+     * и загружать сотни мегабайт весов на каждый было бы слишком долго. Вне [block] [recognize] загружает
+     * модель сам на один вызов. По умолчанию просто выполняет [block] — для движков без дорогой загрузки.
+     */
+    suspend fun <T> withModelLoaded(block: suspend () -> T): T = block()
+
+    /** Есть ли на устройстве модель для режима с пунктуацией или без — для настроек. */
+    fun supportsPunctuationMode(punctuated: Boolean): Boolean = true
 }
 
 /** Интервал речи одного говорящего. [speaker] — канал модели в порядке первого появления (с нуля). */
