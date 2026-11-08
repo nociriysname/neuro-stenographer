@@ -14,7 +14,7 @@
 
 ```bash
 git submodule update --init --depth 1   # NeMo-Speech.cpp, llama.cpp, SentencePiece в src/android/third_party
-tools/fetch_models.sh                   # веса моделей в assets, с проверкой SHA-256
+tools/fetch_models.sh                   # веса моделей и AAR sherpa-onnx, с проверкой SHA-256
 ```
 
 ## Сборка
@@ -29,13 +29,26 @@ cd src/android
 Первая сборка компилирует нативную часть (ggml, NeMo-Speech.cpp, SentencePiece) и идёт несколько минут,
 дальше CMake пересобирает только изменённое.
 
-Чтобы при разработке не пересобирать APK с весами, модель можно подложить на устройство:
-`tools/fetch_models.sh --adb` кладёт её в `/sdcard/Android/data/ru.nuclearhack.stenographer/files/models/`.
+Чтобы при разработке не пересобирать APK с весами, модели можно подложить на устройство:
+`tools/fetch_models.sh --adb` кладёт их в `/sdcard/Android/data/ru.nuclearhack.stenographer/files/models/`.
+
+GigaAM-v3 бывает в двух вариантах: `e2e_rnnt` (по умолчанию, с пунктуацией) и `rnnt` (без пунктуации).
+В APK попадает один: `tools/fetch_models.sh --asr=rnnt` заменяет вариант в assets.
 
 Готовые APK: `app/build/outputs/apk/{debug,release}/`.
 
 Если Android SDK не находится, создайте `src/android/local.properties` со строкой
 `sdk.dir=/путь/к/Android/sdk` (Android Studio делает это сама при открытии проекта).
+
+## Проверка кода
+
+```bash
+./gradlew detekt                       # статический анализ всех модулей (входит в check)
+./gradlew detekt -PdetektAutoCorrect   # заодно исправить форматирование
+```
+
+Конфиг — `config/detekt/detekt.yml` (перенесён из CuApp), свои правила — модуль `detekt-rules`.
+Отчёты: `<модуль>/build/reports/detekt/detekt.html`.
 
 ## Проверка движков на устройстве
 
@@ -50,6 +63,18 @@ adb shell am instrument -w -e class ru.nuclearhack.stenographer.core.diarization
 ```
 
 Время, RTF и пиковая память — в `adb logcat -s StenoDiarTest`, сегменты — рядом с записью в `dialog.segments.json`.
+
+Так же устроены `GigaAmSpeechRecognizerDeviceTest` в `core-asr` (пакет `…core.asr.test`, лог `StenoAsrTest`)
+и сквозной тест всего конвейера в `:app` — на моделях из APK, результат в формате организаторов:
+
+```bash
+./gradlew :app:installDebug :app:installDebugAndroidTest
+adb push dialog.wav /sdcard/Android/data/ru.nuclearhack.stenographer/files/dialog.wav
+adb shell am instrument -w -e class ru.nuclearhack.stenographer.PipelineDeviceTest \
+    ru.nuclearhack.stenographer.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+Расшифровка — в `dialog.transcript.json` рядом с записью, тайминги этапов — в `adb logcat -s StenoPipelineTest`.
 
 ## Модели
 

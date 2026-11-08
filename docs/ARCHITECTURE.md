@@ -77,33 +77,38 @@ JSON по ТЗ + TXT + SRT, экран результата                     
 | `e2e_rnnt` / `e2e_ctc` | — | С пунктуацией и нормализацией текста (числа цифрами) |
 | Whisper (для сравнения) | 25.1 | Почти втрое хуже на русском |
 
-**Рантайм: sherpa-onnx** (ONNX Runtime, Kotlin API, готовый AAR). У k2-fsa уже есть конвертации
-всех вариантов v3 (asr-models, 16.12.2025):
+**Рантайм: sherpa-onnx 2.0.1** (ONNX Runtime, Kotlin API). У k2-fsa есть конвертации всех вариантов v3
+(asr-models, 16.12.2025), энкодер int8:
 
-- `sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16` — rnnt;
-- `sherpa-onnx-nemo-transducer-punct-giga-am-v3-russian-2025-12-16` — e2e_rnnt;
-- `sherpa-onnx-nemo-ctc-giga-am-v3-russian-2025-12-16` / `…-ctc-punct-…` — CTC-варианты.
+- `sherpa-onnx-nemo-transducer-punct-giga-am-v3-russian-2025-12-16` — e2e_rnnt, словарь SentencePiece на 1024 токена;
+- `sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16` — rnnt, посимвольный словарь (33 буквы и пробел);
+- `…-ctc-…` — CTC-варианты, пока не используем.
 
-AAR `sherpa-onnx-2.0.1.aar` (~49 МБ) лежит в GitHub Releases, а не в Maven Central. Подключаем его
-скриптом скачивания с фиксированным хэшем и не храним в git.
+**Как сделано в `core-asr`:**
 
-**Какой вариант брать — решаем замером, а не заранее.** WER зависит от того, как организаторы
-нормализуют текст перед сравнением. Если в эталоне «две тысячи двадцать пять», то нормализация e2e
-(«2025») даст ошибку на ровном месте. Поэтому:
+1. AAR sherpa-onnx публикуется только в GitHub Releases. Берём вариант `sherpa-onnx-static-link-onnxruntime`
+   (38 МБ): ONNX Runtime слинкован внутрь `libsherpa-onnx-jni.so` и не конфликтует со своим
+   `onnxruntime-android`, если он понадобится позже (например, для эмоций). `fetch_models.sh` кладёт AAR
+   в локальный Maven-репозиторий `src/android/third_party/maven`, и Gradle берёт его как обычную
+   зависимость из каталога версий. Прямой `files("x.aar")` в библиотечном модуле AGP не разрешает.
+2. Веса — `encoder.int8.onnx` (225 МБ), `decoder.onnx`, `joiner.onnx`, `tokens.txt` из архива k2-fsa —
+   лежат в `assets/models/gigaam-v3-<вариант>/`. В APK кладётся один вариант (`fetch_models.sh --asr=…`),
+   `GigaAmSpeechRecognizer` берёт тот, что есть на устройстве. При первом запуске `ModelInstaller`
+   копирует файлы в `noBackupFilesDir` (1.7 с на эмуляторе).
+3. `OfflineRecognizer`: `model_type = nemo_transducer`, 64 mel, greedy search, 4 потока. Остальные параметры
+   признаков sherpa-onnx берёт по флагу `is_giga_am` из метаданных модели.
+4. Модель загружается 3–3.5 с и занимает ~230 МБ, поэтому в порт `SpeechRecognizer` добавлен
+   `withModelLoaded { }`: конвейер загружает GigaAM один раз на все фрагменты и освобождает её до LLM-этапа.
+5. Слова собираются из токенов (`tokensToWords`): для SentencePiece — по маркеру `▁`, пунктуация
+   приклеивается к слову; для посимвольного словаря — по токену-пробелу. Начало слова — таймкод первого
+   токена, конец — кадр (40 мс) после последнего, но не позже начала следующего слова. Границы реплик
+   конвейер берёт по словам, поэтому запас `pad_onset` диаризации на них не влияет.
 
-1. Стартуем с `rnnt` (лучший WER, без сюрпризов нормализации) и `e2e_rnnt` за флагом.
-2. Спрашиваем организаторов, как готовится текст перед WER (вопросы в конце документа).
-3. Финальный выбор — по нашему стенду ([TEST_RESULTS.md](TEST_RESULTS.md)).
-
-**Важные детали интеграции:**
-
-- *Длина входа.* Модель обучалась на коротких отрезках, длинные записи в оригинале режут VAD.
-  У нас это делает `ChunkPlanner`: фрагменты до 20 с.
-- *Таймкоды.* sherpa-onnx отдаёт токены с номерами кадров (шаг 40 мс). Слова собираем из
-  SentencePiece-токенов по маркеру `▁`. У RNNT токен может «запаздывать» на 1–2 кадра, поэтому сдвиг
-  калибруем на своих данных.
-- *Скорость.* int8-веса, 4 потока на больших ядрах. RTF ≈ 0.05–0.15 на флагманах — это оценка,
-  проверить на устройстве.
+**Какой вариант оставить для сдачи — решаем по нормализации организаторов.** Если в эталоне «две тысячи
+двадцать пять», то e2e («2025») даст ошибку на ровном месте; то же с дефисами («нейро-стенографист» против
+«нейростенографист»). Сейчас по умолчанию e2e_rnnt: читаемый текст сразу с пунктуацией. На тестовом
+диалоге оба варианта дали WER 2 %, rnnt в единичном замере декодировал быстрее (2.5 с против 4.4 с на
+32 с аудио). Окончательно выбираем после ответа организаторов, вопросы в конце документа.
 
 ### Nemotron-3-Diarization — кто говорит
 
@@ -210,7 +215,7 @@ src/android/
 ├── build-logic/                 convention-плагины steno.android.* / steno.jvm.library
 └── sources/
     ├── common/                  платформенная инфраструктура, не знает о предметной области
-    │   ├── common-uikit         тема, палитра спикеров, UdfViewModel, CollectEffects
+    │   ├── common-uikit         дизайн-система (токены, тема, компоненты), UdfViewModel
     │   ├── common-audio         декодирование (MediaCodec) и ресемплинг в моно 16 кГц
     │   └── common-models        доставка весов: assets → noBackupFilesDir, подкладывание через adb
     ├── core/
@@ -269,8 +274,29 @@ WorkManager с foreground service типа `mediaProcessing`, чтобы обр�
 сворачивании и чтобы показывать прогресс в уведомлении.
 
 **Нативный слой.** Один `.so` с NeMo-Speech.cpp (диаризация) и llama.cpp на общем ggml, плюс AAR
-sherpa-onnx со своим ONNX Runtime. Собираем только `arm64-v8a`: все современные устройства, а APK
+sherpa-onnx со статически слинкованным ONNX Runtime. Собираем только `arm64-v8a`: все современные устройства, а APK
 вдвое меньше.
+
+**Дизайн-система (`common-uikit`).** Собственная, не Material 3: экраны собираются только из её компонентов.
+- `foundation/token` — отступы (сетка 4dp), размеры, радиусы, длительности анимаций;
+  `foundation/theme` — цвета для светлой и тёмной тем (основной голубой, все текстовые пары проходят WCAG AA,
+  8 цветов спикеров) и типографика на Golos Text с табличными цифрами для таймкодов; `StenoTheme`.
+- `foundation/icon` — свой набор SVG-иконок (`res/drawable/ic_steno_*`), Material Icons не используем.
+- `components` — `StenoScaffold` с тостами, `StenoTopBar`, `StenoButton`, `StenoIconButton`, `StenoCard`,
+  `StenoProgressBar`, `StenoStatePanel`, `SpeakerBadge`, `StatusDot`, `StenoInfoRow`, `StenoText`.
+- Из Material 3 остался только ripple внутри темы. Значения токенов предварительные: их заменит макет
+  из Claude Design.
+
+**Статический анализ — detekt 1.23.8**, перенесён из CuApp: конфиг `src/android/config/detekt/detekt.yml`,
+конвенция `steno.detekt` (без `DetektPlugin.apply()`, совместима с Gradle 10), detekt-formatting и свои
+правила в модуле `:detekt-rules`:
+- `NoLocalDesignValue` — «сырые» dp, sp, цвета и доли разрешены только в `foundation/token` и `foundation/theme`;
+- `NoInlineFqnReference` — полные имена классов только в импортах;
+- `NoEmptyInteractiveAction` — в дизайн-системе нет пустых `onClick`;
+- `DetektRuleIssueAsProperty` — защита самих правил от NPE при загрузке.
+
+Плюс `ForbiddenImport`: `androidx.compose.material3.*` разрешён только в `common-uikit`. Архитектурные правила
+CuApp не переносили: они завязаны на его граф модулей, а слои у нас и так разведены модулями Gradle.
 
 ## Зависимости
 
@@ -279,21 +305,24 @@ sherpa-onnx со своим ONNX Runtime. Собираем только `arm64-v
 | GigaAM-v3 (ONNX от k2-fsa) | ASR | MIT | assets, скачивается скриптом |
 | Nemotron-3-Diarization q8_0 GGUF | диаризация | OpenMDW-1.1 | assets, скачивается скриптом |
 | LLM (1–2B, GGUF Q4) | постобработка | зависит от модели | assets, скачивается скриптом |
-| sherpa-onnx 2.0.1 | рантайм ASR | Apache-2.0 | AAR из GitHub Releases |
+| sherpa-onnx 2.0.1 | рантайм ASR | Apache-2.0 | AAR из GitHub Releases → локальный Maven (скрипт) |
 | NeMo-Speech.cpp | рантайм диаризации | Apache-2.0 | исходники + CMake/NDK |
-| llama.cpp | рантайм LLM | MIT | сабмодуль NeMo-Speech.cpp |
+| llama.cpp | ggml для диаризации, позже рантайм LLM | MIT | сабмодуль `third_party/llama.cpp` |
+| SentencePiece | нужен при линковке NeMo-Speech.cpp | Apache-2.0 | сабмодуль `third_party/sentencepiece` |
 | Metro / metrox | DI | Apache-2.0 | Maven Central |
+| Golos Text | шрифт интерфейса | OFL-1.1 ([текст](licenses/GolosText-OFL.txt)) | `res/font` в common-uikit |
+| detekt 1.23.8 | статический анализ | Apache-2.0 | только сборка |
 
 ### Поставка моделей
 
 Эксперты ставят APK и сразу работают офлайн, поэтому **модели лежат внутри APK**:
 
 - в `assets` без сжатия (`androidResources.noCompress += listOf("onnx", "gguf")`);
-- при первом запуске распаковываются в `filesDir` с экраном прогресса, потому что ggml и llama.cpp
-  мапят файл по пути.
+- при первом запуске копируются в `noBackupFilesDir`, потому что ggml и llama.cpp мапят файл по пути
+  (экран прогресса для этого шага — в онбординге).
 
-Бюджет (оценка): GigaAM-v3 int8 ~160–250 МБ + Nemotron 107 МБ + LLM 0.5–1.2 ГБ + нативные библиотеки
-~50 МБ, то есть APK ≈ 0.9–1.6 ГБ. Держим меньше 2 ГБ. Веса в git не коммитим:
+Бюджет: GigaAM-v3 int8 232 МБ + Nemotron 107 МБ + LLM 0.5–1.2 ГБ (оценка) + нативные библиотеки 26 МБ,
+то есть APK ≈ 0.9–1.6 ГБ. Без LLM debug-APK сейчас весит ~400 МБ. Держим меньше 2 ГБ. Веса в git не коммитим:
 [`tools/fetch_models.sh`](../tools/fetch_models.sh) качает их по зафиксированной ревизии Hugging Face
 и сверяет SHA-256. Распаковкой и поиском файлов занимается `ModelInstaller` из `common-models`. Для
 разработки модель можно подложить через adb (`fetch_models.sh --adb`), чтобы не пересобирать APK со 100+ МБ весов.
@@ -337,7 +366,8 @@ sherpa-onnx со своим ONNX Runtime. Собираем только `arm64-v
 
 ## Вопросы организаторам
 
-1. Как нормализуется текст перед WER: регистр, пунктуация, числа цифрами или словами, «ё»?
+1. Как нормализуется текст перед WER: регистр, пунктуация, числа цифрами или словами, «ё», слова
+   через дефис (склеиваются или делятся)?
 2. Как считается DER: collar, учитываются ли перекрытия, как сопоставляются наши `speaker_id` с эталоном?
 3. Что входит во время для RTF: от нажатия «Старт» до готового JSON? Учитывается ли шаг LLM?
 4. Тестовые записи: язык (только русский?), длительность, число спикеров, формат файлов, есть ли

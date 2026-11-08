@@ -1,53 +1,36 @@
 package ru.nuclearhack.stenographer.feature.transcript.presentation
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
-import java.util.Locale
-import ru.nuclearhack.stenographer.common.uikit.theme.SpeakerPalette
-import ru.nuclearhack.stenographer.common.uikit.theme.StenographerTheme
+import ru.nuclearhack.stenographer.common.uikit.components.bar.StenoTopBar
+import ru.nuclearhack.stenographer.common.uikit.components.overlay.StenoBottomSheet
+import ru.nuclearhack.stenographer.common.uikit.components.overlay.StenoToastHostState
+import ru.nuclearhack.stenographer.common.uikit.components.overlay.rememberStenoToastHostState
+import ru.nuclearhack.stenographer.common.uikit.components.scaffold.StenoScaffold
+import ru.nuclearhack.stenographer.common.uikit.components.state.StenoStateAction
+import ru.nuclearhack.stenographer.common.uikit.components.state.StenoStatePanel
+import ru.nuclearhack.stenographer.common.uikit.foundation.icon.StenoIcons
+import ru.nuclearhack.stenographer.common.uikit.foundation.icon.StenoIllustrations
 import ru.nuclearhack.stenographer.common.uikit.udf.CollectEffects
 import ru.nuclearhack.stenographer.core.domain.repository.TranscriptFormat
-import ru.nuclearhack.stenographer.core.domain.usecase.ProcessingStage
-import ru.nuclearhack.stenographer.core.domain.usecase.ProcessingTimings
 import ru.nuclearhack.stenographer.core.model.AudioRef
-import ru.nuclearhack.stenographer.core.model.SpeakerId
-import ru.nuclearhack.stenographer.core.model.Transcript
-import ru.nuclearhack.stenographer.core.model.Utterance
-import ru.nuclearhack.stenographer.feature.transcript.presentation.components.UtteranceItem
+import ru.nuclearhack.stenographer.feature.transcript.presentation.components.DetailsSheetContent
+import ru.nuclearhack.stenographer.feature.transcript.presentation.components.DoneTopBar
+import ru.nuclearhack.stenographer.feature.transcript.presentation.components.ExportSheetContent
+import ru.nuclearhack.stenographer.feature.transcript.presentation.components.ProcessingContent
+import ru.nuclearhack.stenographer.feature.transcript.presentation.components.SearchTopBar
+import ru.nuclearhack.stenographer.feature.transcript.presentation.components.TranscriptDoneContent
 
+/** Обработка записи и результат: этапы, «Диалог» / «Стенограмма», поиск и экспорт. */
 @Composable
 fun TranscriptScreen(
     audio: AudioRef,
@@ -56,7 +39,7 @@ fun TranscriptScreen(
         assistedMetroViewModel<TranscriptViewModel, TranscriptViewModel.Factory> { create(audio) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val toastHostState = rememberStenoToastHostState()
 
     // Один лаунчер на формат: mime-тип CreateDocument задаётся при создании контракта.
     val exportLaunchers = TranscriptFormat.entries.associateWith { format ->
@@ -70,173 +53,105 @@ fun TranscriptScreen(
             is TranscriptEffect.ChooseExportDestination ->
                 exportLaunchers.getValue(effect.format).launch(effect.suggestedName)
 
-            is TranscriptEffect.ShowMessage -> snackbarHostState.showSnackbar(effect.text)
+            is TranscriptEffect.ShowMessage -> toastHostState.show(effect.text)
         }
     }
 
-    TranscriptContent(
-        state = state,
-        snackbarHostState = snackbarHostState,
-        onBack = onBack,
-        onAction = viewModel::onAction,
-    )
+    TranscriptContent(state, toastHostState, onBack = onBack, onAction = viewModel::onAction)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TranscriptContent(
+internal fun TranscriptContent(
     state: TranscriptState,
-    snackbarHostState: SnackbarHostState,
+    toastHostState: StenoToastHostState,
     onBack: () -> Unit,
     onAction: (TranscriptAction) -> Unit,
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(state.fileName ?: "Расшифровка", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = { TextButton(onClick = onBack) { Text("Назад") } },
-                actions = {
-                    if (state.phase is TranscriptPhase.Done) {
-                        TranscriptFormat.entries.forEach { format ->
-                            TextButton(onClick = { onAction(TranscriptAction.ExportRequested(format)) }) {
-                                Text(format.extension.uppercase())
-                            }
-                        }
-                    }
-                },
+    val phase = state.phase
+    BackHandler(enabled = state.search.open) { onAction(TranscriptAction.SearchClosed) }
+    StenoScaffold(
+        topBar = { TranscriptTopBar(state, onBack, onAction) },
+        toastHostState = toastHostState,
+    ) {
+        when (phase) {
+            TranscriptPhase.Preparing -> ProcessingContent(processing = null, onCancel = { cancel(onAction, onBack) })
+            is TranscriptPhase.Processing ->
+                ProcessingContent(processing = phase, onCancel = { cancel(onAction, onBack) })
+
+            is TranscriptPhase.Done -> TranscriptDoneContent(
+                done = phase,
+                audioDurationMs = state.audioDurationMs,
+                layout = state.layout,
+                search = state.search,
+                onLayoutSelect = { onAction(TranscriptAction.LayoutSelected(it)) },
             )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-        ) {
-            when (val phase = state.phase) {
-                TranscriptPhase.Preparing -> ProcessingPanel(title = "Подготовка…", progress = null)
-                is TranscriptPhase.Processing -> ProcessingPanel(title = phase.stage.title(), progress = phase.progress)
-                is TranscriptPhase.Done -> TranscriptList(phase)
-                is TranscriptPhase.Failed -> FailurePanel(phase.message, onRetry = { onAction(TranscriptAction.Retry) })
+
+            is TranscriptPhase.Failed -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                StenoStatePanel(
+                    title = "Не удалось расшифровать запись",
+                    message = phase.message,
+                    illustration = StenoIllustrations.ErrorModel,
+                    primaryAction = StenoStateAction(
+                        "Повторить",
+                        { onAction(TranscriptAction.Retry) },
+                        StenoIcons.Retry,
+                    ),
+                    secondaryAction = StenoStateAction("Назад", onBack),
+                )
             }
         }
     }
+    if (phase is TranscriptPhase.Done) DoneSheets(state, phase, onAction)
+}
+
+private fun cancel(onAction: (TranscriptAction) -> Unit, onBack: () -> Unit) {
+    onAction(TranscriptAction.Cancel)
+    onBack()
 }
 
 @Composable
-private fun ProcessingPanel(title: String, progress: Float?) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+private fun TranscriptTopBar(state: TranscriptState, onBack: () -> Unit, onAction: (TranscriptAction) -> Unit) {
+    val title = state.fileName ?: "Расшифровка"
+    when {
+        state.phase is TranscriptPhase.Done && state.search.open -> SearchTopBar(
+            search = state.search,
+            onQueryChange = { onAction(TranscriptAction.QueryChanged(it)) },
+            onPrevious = { onAction(TranscriptAction.PreviousMatch) },
+            onNext = { onAction(TranscriptAction.NextMatch) },
+            onClose = { onAction(TranscriptAction.SearchClosed) },
+        )
+
+        state.phase is TranscriptPhase.Done -> DoneTopBar(
+            title = title,
+            onBack = onBack,
+            onSearch = { onAction(TranscriptAction.SearchOpened) },
+            onMore = { onAction(TranscriptAction.SheetOpened(TranscriptSheet.Details)) },
+        )
+
+        state.phase is TranscriptPhase.Failed -> StenoTopBar(title = title, onBack = onBack)
+        else -> StenoTopBar(title = title, eyebrow = "Расшифровка")
+    }
+}
+
+@Composable
+private fun DoneSheets(state: TranscriptState, done: TranscriptPhase.Done, onAction: (TranscriptAction) -> Unit) {
+    StenoBottomSheet(
+        visible = state.sheet == TranscriptSheet.Export,
+        onDismissRequest = { onAction(TranscriptAction.SheetDismissed) },
+        title = "Экспорт расшифровки",
     ) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(16.dp))
-        if (progress == null) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        } else {
-            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
-        }
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = "Все вычисления выполняются на устройстве",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        ExportSheetContent(
+            recordingName = state.fileName,
+            selected = state.exportFormat,
+            onSelect = { onAction(TranscriptAction.ExportFormatSelected(it)) },
+            onSave = { onAction(TranscriptAction.ExportConfirmed) },
         )
     }
-}
-
-@Composable
-private fun FailurePanel(message: String, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+    StenoBottomSheet(
+        visible = state.sheet == TranscriptSheet.Details,
+        onDismissRequest = { onAction(TranscriptAction.SheetDismissed) },
+        title = "Ещё",
     ) {
-        Text("Не удалось расшифровать запись", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-        Text(message, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.error)
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = onRetry) { Text("Повторить") }
-    }
-}
-
-@Composable
-private fun TranscriptList(done: TranscriptPhase.Done) {
-    val speakers = done.transcript.speakers
-    LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        item { SummaryCard(done) }
-        if (done.transcript.utterances.isEmpty()) {
-            item { Text("Речь в записи не найдена", color = MaterialTheme.colorScheme.onSurfaceVariant) }
-        }
-        items(done.transcript.utterances) { utterance ->
-            UtteranceItem(utterance, color = SpeakerPalette.colorFor(speakers.indexOf(utterance.speaker)))
-        }
-    }
-}
-
-@Composable
-private fun SummaryCard(done: TranscriptPhase.Done) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = "Говорящих: ${done.transcript.speakers.size} · Реплик: ${done.transcript.utterances.size}",
-                style = MaterialTheme.typography.titleSmall,
-            )
-            Text(
-                text = String.format(
-                    Locale.ROOT,
-                    "Обработка %.1f с · RTF %.2f",
-                    done.timings.totalMs / 1000.0,
-                    done.timings.rtf,
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            done.warnings.forEach { warning ->
-                Text(warning, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-            }
-        }
-    }
-}
-
-private fun ProcessingStage.title(): String = when (this) {
-    ProcessingStage.Decoding -> "Декодирование аудио"
-    ProcessingStage.Diarization -> "Определение говорящих"
-    ProcessingStage.Recognition -> "Распознавание речи"
-    ProcessingStage.PostProcessing -> "Постобработка (LLM)"
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun TranscriptDonePreview() {
-    val transcript = Transcript(
-        listOf(
-            Utterance(SpeakerId("speaker_1"), 1_250, 4_380, "Добрый день! Объявляю заседание Котовицкого совета открытым."),
-            Utterance(SpeakerId("speaker_2"), 4_900, 6_100, "Мур. А протокол кто ведёт?"),
-            Utterance(SpeakerId("speaker_1"), 6_300, 8_000, "Нейро-стенографист, конечно."),
-        ),
-    )
-    StenographerTheme(dynamicColor = false) {
-        TranscriptContent(
-            state = TranscriptState(
-                fileName = "zasedanie.m4a",
-                phase = TranscriptPhase.Done(
-                    transcript = transcript,
-                    timings = ProcessingTimings(8_000, 120, 400, 900, 300, 1_720),
-                    warnings = emptyList(),
-                ),
-            ),
-            snackbarHostState = remember { SnackbarHostState() },
-            onBack = {},
-            onAction = {},
-        )
+        DetailsSheetContent(done, onExport = { onAction(TranscriptAction.SheetOpened(TranscriptSheet.Export)) })
     }
 }

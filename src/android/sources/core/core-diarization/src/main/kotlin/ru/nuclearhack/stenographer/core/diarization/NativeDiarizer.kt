@@ -18,7 +18,13 @@ internal object NativeDiarizer {
 
     @JvmStatic external fun nativeStreamOpen(model: Long): Long
 
-    @JvmStatic external fun nativeStreamPush(stream: Long, samples: FloatArray, offset: Int, count: Int, sampleRate: Int)
+    @JvmStatic external fun nativeStreamPush(
+        stream: Long,
+        samples: FloatArray,
+        offset: Int,
+        count: Int,
+        sampleRate: Int,
+    )
 
     @JvmStatic external fun nativeStreamFinish(stream: Long)
 

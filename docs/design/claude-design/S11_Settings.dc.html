@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Настройки</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.seg>button{border:0;background:none;cursor:pointer}
+.seg>button.on{background:var(--bg)}
+.ti{width:40px;height:40px;border-radius:12px;background:var(--p-soft);color:var(--p-ink);display:flex;align-items:center;justify-content:center;flex:none}
+.sl{font-size:12px;line-height:16px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--tx2);padding:4px 0 8px}
+.opt{min-height:60px;padding:8px 14px}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5.5M11.5 6l-6 6 6 6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-chip" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></symbol>
+<symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14c.9 1.4 2.1 2 3.5 2s2.6-.6 3.5-2M9 9.5v.5M15 9.5v.5"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.9" r=".6" fill="currentColor"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5l7 2.5v5.5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-2.5z"/><path d="M9 12l2.2 2.2L15.2 10"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+</defs></svg>
+<div class="board" style="width:856px;height:980px">
+  <div class="col g4"><div class="cap"><b>Экран 11</b> Настройки</div><h1>Распознавание, тема, место под модели, о приложении и лицензии</h1></div>
+  <div class="grid">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="2">
+      <div class="cell">
+        <div class="cap"><b class="{{p.bc}}">{{p.theme}}</b>{{p.label}}</div>
+        <div class="ph ns {{p.cls}}">
+          <div class="top" style="padding-left:8px"><button class="ib g" aria-label="Назад"><svg class="ic" aria-hidden="true"><use href="#i-back"></use></svg></button><h2 class="f1" style="font-size:22px">Настройки</h2></div>
+          <div class="pad col" style="gap:14px;margin-top:4px">
+            <div>
+              <div class="sl">Распознавание речи</div>
+              <div class="col g8">
+                <div class="opt {{p.o1}}"><span class="rd"><sc-if value="{{p.s1}}" hint-placeholder-val="{{ true }}"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg></sc-if></span><div class="f1"><div class="t-lg">С пунктуацией</div><div class="t-cp c2">Точки и запятые расставит модель</div></div></div>
+                <div class="opt {{p.o2}}"><span class="rd"><sc-if value="{{p.s2}}" hint-placeholder-val="{{ false }}"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg></sc-if></span><div class="f1"><div class="t-lg">Без пунктуации</div><div class="t-cp c2">Быстрее, текст без знаков препинания</div></div></div>
+              </div>
+            </div>
+            <div>
+              <div class="sl">Тема</div>
+              <div class="seg"><sc-for list="{{p.theme3}}" as="s" hint-placeholder-count="3"><button class="{{s.c}}">{{s.t}}</button></sc-for></div>
+            </div>
+            <div class="fx ai g12" style="min-height:56px;border-top:1px solid var(--line);padding-top:6px"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-smile"></use></svg></span><div class="f1"><div class="t-lg">Подсвечивать эмоции</div><div class="t-cp c2">Подсказка, не оценка человека</div></div><button class="sw" role="switch" aria-checked="false" aria-label="Подсвечивать эмоции по умолчанию"></button></div>
+            <div>
+              <div class="sl">Нейросети на устройстве</div>
+              <div class="li" style="min-height:64px;padding:6px 0"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-chip"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Место под модели</div><div class="t-cp c2 num">Память телефона · занято 412 МБ</div></div><svg class="ic c3" aria-hidden="true"><use href="#i-chevron"></use></svg></div>
+              <div class="fx ai g8" style="margin-top:4px"><span class="bdg ok"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg>Три модели готовы</span><button class="btn t sm">Проверить файлы</button></div>
+            </div>
+            <div>
+              <div class="sl">О приложении</div>
+              <div class="li" style="min-height:56px;padding:4px 0"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Нейро-стенографист</div><div class="t-cp c2 num">Версия 1.0 · всё работает офлайн</div></div></div>
+              <div class="li" style="min-height:56px;padding:4px 0"><span class="ti"><svg class="ic" aria-hidden="true"><use href="#i-shield"></use></svg></span><div class="f1"><div class="t-lg" style="line-height:20px">Лицензии и модели</div><div class="t-cp c2">Открытое ПО и условия моделей</div></div><svg class="ic c3" aria-hidden="true"><use href="#i-chevron"></use></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":856,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const t3 = (sel) => ['Системная', 'Светлая', 'Тёмная'].map((t, i) => ({ t, c: i === sel ? 'on' : '' }));
+    return { phones: [
+      { cls: 'L', bc: '', theme: 'Светлая', label: 'тема «Системная»', o1: 'on', o2: '', s1: true, s2: false, theme3: t3(0) },
+      { cls: 'D', bc: 'd', theme: 'Тёмная', label: 'тема «Тёмная», без пунктуации', o1: '', o2: 'on', s1: false, s2: true, theme3: t3(2) }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

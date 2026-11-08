@@ -4,8 +4,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import java.io.File
-import kotlin.math.roundToLong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -21,6 +19,8 @@ import ru.nuclearhack.stenographer.core.domain.engine.EngineKind
 import ru.nuclearhack.stenographer.core.domain.engine.EngineUnavailableException
 import ru.nuclearhack.stenographer.core.domain.engine.SpeakerSegment
 import ru.nuclearhack.stenographer.core.model.PcmAudio
+import java.io.File
+import kotlin.math.roundToLong
 
 /**
  * Диаризация nvidia/Nemotron-3-Diarization (Sortformer + AOSC, до 8 говорящих, OpenMDW-1.1)
@@ -85,7 +85,7 @@ class NemotronDiarizer(
                     NativeDiarizer.nativeStreamPush(stream, samples, offset, count, audio.sampleRate)
                     offset += count
                     // Хвост записи считается в finish(), поэтому до него показываем не больше 90 %.
-                    onProgress(0.9f * offset / samples.size)
+                    onProgress(FEED_PROGRESS_SHARE * offset / samples.size)
                 }
                 NativeDiarizer.nativeStreamFinish(stream)
                 onProgress(1f)
@@ -126,18 +126,24 @@ class NemotronDiarizer(
 
         /** Порция для push: 2 с. Модель всё равно считает целыми чанками, это шаг прогресса и отмены. */
         private const val PUSH_CHUNK_SAMPLES = 2 * PcmAudio.SAMPLE_RATE_16K
+
+        /** Доля прогресса на подачу звука; остаток — хвостовой чанк в finish(). */
+        private const val FEED_PROGRESS_SHARE = 0.9f
     }
 }
 
+private const val MS_PER_SECOND = 1_000.0
+private const val VALUES_PER_SEGMENT = 3
+
 /** `[startSec, endSec, speaker(с 1)] × N` → доменные сегменты (спикер с нуля, время в мс), по началу. */
 internal fun parseSegments(raw: DoubleArray): List<SpeakerSegment> {
-    require(raw.size % 3 == 0) { "Ожидались тройки значений, пришло ${raw.size}" }
-    return (raw.indices step 3)
+    require(raw.size % VALUES_PER_SEGMENT == 0) { "Ожидались тройки значений, пришло ${raw.size}" }
+    return (raw.indices step VALUES_PER_SEGMENT)
         .map { i ->
             SpeakerSegment(
                 speaker = raw[i + 2].toInt() - 1,
-                startMs = (raw[i] * 1000).roundToLong(),
-                endMs = (raw[i + 1] * 1000).roundToLong(),
+                startMs = (raw[i] * MS_PER_SECOND).roundToLong(),
+                endMs = (raw[i + 1] * MS_PER_SECOND).roundToLong(),
             )
         }
         .filter { it.endMs > it.startMs && it.speaker >= 0 }

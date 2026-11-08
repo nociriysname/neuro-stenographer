@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Онбординг</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.dtx{flex:1;height:6px;border-radius:3px;background:var(--s3)}
+.sqb{width:64px;height:64px;flex:none;border:0;border-radius:20px;background:var(--p);color:var(--onp);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px color-mix(in srgb,var(--p) 28%,transparent);cursor:pointer}
+.sqb.dis{background:var(--s2);color:var(--tx3);box-shadow:none}
+.dtx.on{background:var(--p)}
+.ot{font-size:30px;line-height:36px;font-weight:700;letter-spacing:-.01em}
+.fr{display:flex;align-items:center;gap:12px;min-height:52px}
+.ft{width:40px;height:40px;border-radius:12px;background:var(--p-soft);color:var(--p-ink);display:flex;align-items:center;justify-content:center;flex:none}
+.mrow{display:flex;align-items:center;gap:12px;min-height:44px}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5.5M11.5 6l-6 6 6 6"/></symbol>
+<symbol id="i-speaker" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.75"/><path d="M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5"/></symbol>
+<symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 10v4M8 6.5v11M12 3.5v17M16 8v8M20 10.5v3"/></symbol>
+<symbol id="i-protocol" viewBox="0 0 24 24"><rect x="5.5" y="5" width="13" height="15.5" rx="2"/><rect x="9" y="3" width="6" height="3.5" rx="1.2"/><path d="M9 10.5h6M9 14h6M9 17.5h3"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5l7 2.5v5.5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-2.5z"/><path d="M9 12l2.2 2.2L15.2 10"/></symbol>
+<symbol id="i-no-cloud" viewBox="0 0 24 24"><path d="M7 18.5h10.5a3.5 3.5 0 0 0 .6-6.9A5.5 5.5 0 0 0 7.6 10 4.3 4.3 0 0 0 7 18.5z"/><path d="M4 4l16 16"/></symbol>
+<symbol id="i-chip" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5M9 20.5h6"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.9" r=".6" fill="currentColor"/></symbol>
+</defs></svg>
+<div class="board" style="width:1632px;height:1810px">
+  <div class="col g4"><div class="cap"><b>Экран 1</b> Онбординг в 4 шага · светлая и тёмная темы</div><h1>Знакомство, приватность, подготовка моделей, доступ к микрофону</h1></div>
+  <div class="grid">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="8">
+      <div class="cell">
+        <div class="cap"><b class="{{p.bc}}">{{p.theme}}</b>{{p.label}}</div>
+        <div class="ph ns {{p.cls}}">
+          <div class="fx g8" style="padding:24px 20px 12px"><sc-for list="{{p.dots}}" as="d" hint-placeholder-count="4"><i class="dtx {{d}}"></i></sc-for></div>
+          <div class="col ai" style="padding:0 20px;flex:1;min-height:0">
+            <img class="ill" src="{{p.img}}" alt="{{p.alt}}" style="width:248px;margin-top:0">
+            <h2 class="ot m0" style="align-self:flex-start;margin-top:6px">{{p.title}}</h2>
+            <p class="t-bd c2 m0" style="align-self:flex-start;margin-top:8px">{{p.body}}</p>
+            <div class="col" style="align-self:stretch;margin-top:14px">
+              <sc-if value="{{p.s1}}" hint-placeholder-val="{{ true }}">
+                <div class="fr"><span class="ft"><svg class="ic" aria-hidden="true"><use href="#i-speaker"></use></svg></span><div class="f1"><div class="t-lb">Кто говорит</div><div class="t-cp c2">голоса разделены по людям</div></div></div>
+                <div class="fr"><span class="ft"><svg class="ic" aria-hidden="true"><use href="#i-wave"></use></svg></span><div class="f1"><div class="t-lb">Когда и что</div><div class="t-cp c2">текст с таймкодами и словами</div></div></div>
+                <div class="fr"><span class="ft"><svg class="ic" aria-hidden="true"><use href="#i-protocol"></use></svg></span><div class="f1"><div class="t-lb">Протокол встречи</div><div class="t-cp c2">решения и задачи в одном месте</div></div></div>
+              </sc-if>
+              <sc-if value="{{p.s2}}" hint-placeholder-val="{{ false }}">
+                <div class="fr"><span class="ft"><svg class="ic" aria-hidden="true"><use href="#i-chip"></use></svg></span><div class="f1"><div class="t-lb">Всё считается на телефоне</div><div class="t-cp c2">три нейросети работают локально</div></div></div>
+                <div class="fr"><span class="ft"><svg class="ic" aria-hidden="true"><use href="#i-no-cloud"></use></svg></span><div class="f1"><div class="t-lb">Ничего не уходит в облако</div><div class="t-cp c2">ни звук, ни текст, ни протокол</div></div></div>
+                <div class="fr"><span class="ft"><svg class="ic" aria-hidden="true"><use href="#i-shield"></use></svg></span><div class="f1"><div class="t-lb">Работает без интернета</div><div class="t-cp c2">хоть в самолёте, хоть в подвале</div></div></div>
+              </sc-if>
+              <sc-if value="{{p.s3}}" hint-placeholder-val="{{ false }}">
+                <div class="card" style="padding:14px 16px">
+                  <div class="fx ai jb"><span class="t-lb">Копирование моделей</span><span class="t-lb num cp">248 из 400 МБ</span></div>
+                  <div class="bar" style="margin:10px 0 8px"><i style="width:62%"></i></div>
+                  <div class="t-cp c2">Осталось около минуты. Приложение можно свернуть.</div>
+                  <div class="col" style="margin-top:8px">
+                    <div class="mrow"><span class="node done" style="width:24px;height:24px;border-radius:8px"><svg class="ic s" style="width:16px;height:16px" aria-hidden="true"><use href="#i-check"></use></svg></span><span class="t-bs f1">Определение говорящих</span><span class="t-cp c2 num">38 МБ</span></div>
+                    <div class="mrow"><span class="node act" style="width:24px;height:24px;border-radius:8px"></span><span class="t-bs f1">Распознавание речи</span><span class="t-cp c2 num">310 МБ</span></div>
+                    <div class="mrow"><span class="node" style="width:24px;height:24px;border-radius:8px"></span><span class="t-bs f1 c2">Протокол встречи</span><span class="t-cp c3 num">52 МБ</span></div>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{p.s4}}" hint-placeholder-val="{{ false }}">
+                <div class="fr"><span class="ft"><svg class="ic" aria-hidden="true"><use href="#i-mic"></use></svg></span><div class="f1"><div class="t-lb">Только во время записи</div><div class="t-cp c2">фоном микрофон не слушает</div></div></div>
+                <div class="fr"><span class="ft"><svg class="ic" aria-hidden="true"><use href="#i-shield"></use></svg></span><div class="f1"><div class="t-lb">Звук остаётся у вас</div><div class="t-cp c2">файл хранится только на устройстве</div></div></div>
+                <div class="fr"><span class="ft"><svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg></span><div class="f1"><div class="t-lb">Доступ можно отозвать</div><div class="t-cp c2">в настройках Android в любой момент</div></div></div>
+              </sc-if>
+            </div>
+          </div>
+          <div class="fx ai g8" style="padding:8px 20px 20px">
+            <button class="btn t f1" style="min-height:64px;font-size:17px">{{p.skip}}</button>
+            <sc-if value="{{p.b1}}" hint-placeholder-val="{{ true }}"><button class="sqb" aria-label="Дальше"><svg class="ic l" style="transform:rotate(180deg)" aria-hidden="true"><use href="#i-back"></use></svg></button></sc-if>
+            <sc-if value="{{p.b3}}" hint-placeholder-val="{{ false }}"><button class="sqb dis" aria-label="Дальше: ждём копирование моделей"><svg class="ic l" style="transform:rotate(180deg)" aria-hidden="true"><use href="#i-back"></use></svg></button></sc-if>
+            <sc-if value="{{p.b4}}" hint-placeholder-val="{{ false }}"><button class="sqb" aria-label="Разрешить доступ к микрофону"><svg class="ic l" aria-hidden="true"><use href="#i-mic"></use></svg></button></sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1632,"height":1810}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const steps = [
+      { title: 'Расшифровка разговоров', body: 'Кто говорил, когда и что — прямо на телефоне, на русском языке.', img: '/_blob/98319953c97dc9cfbe8dbe4c17db3b02', alt: 'Котёнок записывает разговор в блокнот' },
+      { title: 'Всё остаётся у вас', body: 'Никаких серверов и аккаунтов. Данные не покидают устройство.', img: '/_blob/0b989b6085519da48c043046cf8a2e62', alt: 'Котёнок охраняет телефон со щитом' },
+      { title: 'Подготовка моделей', body: 'При первом запуске приложение копирует около 400 МБ нейросетей. Это нужно один раз.', img: '/_blob/5d16531d6792a873df6b9f3840f99051', alt: 'Котёнок несёт коробку с моделью' },
+      { title: 'Нужен микрофон', body: 'Чтобы записывать разговоры, приложению нужен доступ к микрофону. Спросим один раз.', img: '/_blob/883111eca0dac2c712ce12f348a63613', alt: 'Котёнок с микрофоном' }
+    ];
+    const phones = [];
+    ['L', 'D'].forEach((cls) => steps.forEach((s, i) => {
+      const n = i + 1;
+      phones.push({ cls, bc: cls === 'L' ? '' : 'd', theme: cls === 'L' ? 'Светлая' : 'Тёмная', label: 'шаг ' + n, n, skip: n === 4 ? 'Не сейчас' : 'Пропустить', title: s.title, body: s.body, img: s.img, alt: s.alt,
+        dots: [0, 1, 2, 3].map((k) => (k <= i ? 'on' : '')), s1: n === 1, s2: n === 2, s3: n === 3, s4: n === 4, b1: n < 3, b3: n === 3, b4: n === 4 });
+    }));
+    return { phones };
+  }
+}
+</script>
+</body>
+</html>

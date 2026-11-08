@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Токены цвета</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.pn{width:640px;border:1px solid var(--line2);border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:24px}
+.gt{display:flex;flex-direction:column;gap:12px}
+.tl{display:flex;flex-wrap:wrap;gap:8px}
+.tile{width:88px;display:flex;flex-direction:column;gap:4px}
+.sq{height:48px;border-radius:10px;border:1px solid color-mix(in srgb,var(--tx) 16%,transparent)}
+.crr{display:flex;align-items:center;gap:12px;min-height:36px}
+.smp{width:44px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border:1px solid color-mix(in srgb,var(--tx) 14%,transparent);flex:none}
+</style>
+</helmet>
+<div class="board" style="width:1440px;height:2500px;padding:64px;gap:40px">
+  <div class="col g8">
+    <div class="cap"><b>Токены · 1/2</b> Цвет</div>
+    <h1 style="font-size:40px;line-height:46px">Нейро-стенографист — «Бумага и небо»</h1>
+    <div class="sub" style="max-width:880px;font-size:17px;line-height:26px">Спокойный голубой на бумажной поверхности. Роли цвета одинаковы в обеих темах, меняются только значения: в Compose это один интерфейс <b>NsColors</b> и два экземпляра — <b>NsLight</b> и <b>NsDark</b>. Файл <b>tokens.json</b> лежит рядом с проектом.</div>
+  </div>
+
+  <div class="col g16">
+    <div class="t-su">Тональная шкала голубого (общая для тем)</div>
+    <div class="fx g8">
+      <sc-for list="{{blue}}" as="b" hint-placeholder-count="10">
+        <div class="col g8" style="flex:1;min-width:0">
+          <div style="height:72px;border-radius:14px;border:1px solid rgba(20,32,43,.12);background:{{b.hex}}"></div>
+          <div class="t-lb">{{b.tok}}</div>
+          <div class="t-cp num" style="color:#4A5B6B">{{b.hex}}</div>
+          <div class="t-cp" style="color:#4A5B6B">{{b.use}}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div class="fx g32" style="align-items:flex-start">
+    <sc-for list="{{themes}}" as="t" hint-placeholder-count="2">
+      <div class="pn ns {{t.cls}}">
+        <div class="fx ai jb">
+          <div class="t-ti">{{t.name}}</div>
+          <div class="bdg p">{{t.note}}</div>
+        </div>
+        <sc-for list="{{t.groups}}" as="g" hint-placeholder-count="7">
+          <div class="gt">
+            <div class="t-lb c2">{{g.title}}</div>
+            <div class="tl">
+              <sc-for list="{{g.items}}" as="s" hint-placeholder-count="5">
+                <div class="tile">
+                  <div class="sq" style="background:{{s.hex}}"></div>
+                  <div class="t-cp" style="font-weight:600">{{s.tok}}</div>
+                  <div class="t-cp c2 num">{{s.hex}}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <div class="gt">
+          <div class="t-lb c2">Контраст WCAG (минимум AA: 4.5 для текста)</div>
+          <div class="col">
+            <sc-for list="{{t.contrast}}" as="c" hint-placeholder-count="10">
+              <div class="crr">
+                <div class="smp" style="color:{{c.fg}};background:{{c.bg}}">Aa</div>
+                <div class="f1 t-bs">{{c.name}}</div>
+                <div class="t-lb num">{{c.ratio}}</div>
+                <div class="bdg ok">AA</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const lum = (h) => { const n = parseInt(h.slice(1), 16); const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }; return 0.2126 * f(n >> 16) + 0.7152 * f((n >> 8) & 255) + 0.0722 * f(n & 255); };
+    const T = (tok, hex) => ({ tok, hex });
+    const blue = [
+      { tok: 'sky-50', hex: '#EAF5FF', use: 'фон подсветок' }, { tok: 'sky-100', hex: '#D6ECFF', use: 'иллюстрации' }, { tok: 'sky-200', hex: '#AEDAFC', use: 'иллюстрации' },
+      { tok: 'sky-300', hex: '#7EC5F8', use: 'тёмная тема: ссылки' }, { tok: 'sky-400', hex: '#5DB6F5', use: 'тёмная: кнопка' }, { tok: 'sky-500', hex: '#2A94E2', use: 'графика, волна' },
+      { tok: 'sky-600', hex: '#1370BA', use: 'светлая: кнопка' }, { tok: 'sky-700', hex: '#0F5C98', use: 'нажатие, ссылки' }, { tok: 'sky-800', hex: '#0D4776', use: 'глубокие акценты' }, { tok: 'sky-900', hex: '#0B3556', use: 'иллюстрации (штрих)' }
+    ];
+    const mk = (cls, name, note, c, ct) => ({
+      cls, name, note,
+      groups: [
+        { title: 'Фон и поверхности', items: [T('bg', c.bg), T('surface-1', c.s1), T('surface-2', c.s2), T('surface-3', c.s3), T('line', c.line), T('line-strong', c.line2)] },
+        { title: 'Текст', items: [T('text', c.tx), T('text-2', c.tx2), T('text-3', c.tx3)] },
+        { title: 'Основной', items: [T('primary', c.p), T('primary-press', c.pp), T('primary-soft', c.ps), T('primary-ink', c.pi), T('on-primary', c.onp)] },
+        { title: 'Акцент (тёплый, для деталей и поиска)', items: [T('accent', c.ac), T('accent-soft', c.acs), T('accent-ink', c.aci)] },
+        { title: 'Семантика и запись', items: [T('success', c.ok), T('success-soft', c.oks), T('warning', c.w), T('warning-ink', c.wi), T('warning-soft', c.ws), T('error', c.er), T('error-ink', c.ei), T('error-soft', c.es), T('rec', c.rec), T('rec-ink', c.reci), T('rec-soft', c.recs)] },
+        { title: 'Спикеры 1–8', items: c.sp.map((h, i) => T('speaker-' + (i + 1), h)) },
+        { title: 'Подсветка эмоций (фон реплики и маркер)', items: [T('emo-neutral', c.en[0]), T('emo-joy', c.en[1]), T('emo-irritation', c.en[2]), T('emo-sadness', c.en[3]), T('emo-surprise', c.en[4]), T('mark-neutral', c.em[0]), T('mark-joy', c.em[1]), T('mark-irritation', c.em[2]), T('mark-sadness', c.em[3]), T('mark-surprise', c.em[4])] }
+      ].map((g) => ({ title: g.title, items: g.items })),
+      contrast: ct
+    });
+    const L = {
+      bg: '#FFFFFF', s1: '#F6F9FC', s2: '#EDF2F7', s3: '#DCE5EE', line: '#E1E8EF', line2: '#C3CFDB', tx: '#14202B', tx2: '#4A5B6B', tx3: '#5F7081',
+      p: '#1370BA', pp: '#0F5C98', ps: '#E6F3FD', pi: '#0F5C98', onp: '#FFFFFF', ac: '#E58A00', acs: '#FFF0DF', aci: '#9A4E00',
+      ok: '#17703F', oks: '#E3F5EA', w: '#E8A317', wi: '#8A5300', ws: '#FFF2D6', er: '#C73A3A', ei: '#B02F2F', es: '#FDE8E6', rec: '#D92D25', reci: '#B3231C', recs: '#FDE9E7',
+      sp: ['#1370BA', '#C4421F', '#1E7F45', '#7448CC', '#9A5B00', '#BF2F78', '#0A7A70', '#566677'],
+      en: ['#EEF2F6', '#FFF1C7', '#FFE2D8', '#E5E8FB', '#DDF3EC'], em: ['#7C8CA0', '#D99A00', '#D9532F', '#6A6FD6', '#2AA58A']
+    };
+    const D = {
+      bg: '#121A24', s1: '#18222E', s2: '#202C3A', s3: '#2C3A4A', line: '#263444', line2: '#3A4B5E', tx: '#E8EEF4', tx2: '#A9B8C7', tx3: '#8FA1B3',
+      p: '#5DB6F5', pp: '#79C4F8', ps: '#17304A', pi: '#7CC4F8', onp: '#07243D', ac: '#F2A33A', acs: '#3A2B17', aci: '#F6B866',
+      ok: '#5BD18C', oks: '#173326', w: '#F2B84B', wi: '#F2B84B', ws: '#3A3017', er: '#FF8A80', ei: '#FF9C93', es: '#3D2223', rec: '#FF5A4F', reci: '#FF7A70', recs: '#40201F',
+      sp: ['#5DB6F5', '#FF8A6B', '#54D08A', '#B596FF', '#F2B84B', '#F27FB2', '#4DD4C4', '#A7B4C2'],
+      en: ['#222F3E', '#3A3418', '#432823', '#272C4C', '#1C3A35'], em: ['#8FA1B3', '#F2C14B', '#FF8A6B', '#9AA2FF', '#4DD4B8']
+    };
+    const C = (name, fg, bg, ratio) => ({ name, fg, bg, ratio });
+    const cl = [
+      C('Основная кнопка', '#FFFFFF', '#1370BA', '5.2:1'), C('Деструктивная кнопка', '#FFFFFF', '#C73A3A', '5.1:1'), C('Основной текст на фоне', '#14202B', '#FFFFFF', '16.5:1'),
+      C('Вторичный текст на surface-1', '#4A5B6B', '#F6F9FC', '6.6:1'), C('Подсказки и placeholder', '#5F7081', '#FFFFFF', '5.1:1'), C('Ссылка / primary-ink на фоне', '#0F5C98', '#FFFFFF', '7.0:1'),
+      C('Метка спикера 1 (цифра на цвете)', '#FFFFFF', '#1370BA', '5.2:1'), C('Метка спикера 2', '#FFFFFF', '#C4421F', '5.1:1'), C('Подсвеченное слово при проигрывании', '#FFFFFF', '#1370BA', '5.2:1'),
+      C('Плашка «запись» (rec-ink)', '#B3231C', '#FDE9E7', '5.6:1'), C('Тост', '#FFFFFF', '#1B2B3A', '14.5:1')
+    ];
+    const cd = [
+      C('Основная кнопка', '#07243D', '#5DB6F5', '7.1:1'), C('Деструктивная кнопка', '#2A0A0A', '#FF8A80', '8.0:1'), C('Основной текст на фоне', '#E8EEF4', '#121A24', '15.0:1'),
+      C('Вторичный текст на surface-1', '#A9B8C7', '#18222E', '7.9:1'), C('Подсказки и placeholder', '#8FA1B3', '#121A24', '6.6:1'), C('Ссылка / primary-ink на фоне', '#7CC4F8', '#121A24', '9.3:1'),
+      C('Метка спикера 1 (цифра на цвете)', '#0B1620', '#5DB6F5', '8.2:1'), C('Метка спикера 2', '#0B1620', '#FF8A6B', '7.9:1'), C('Подсвеченное слово при проигрывании', '#07243D', '#5DB6F5', '7.1:1'),
+      C('Плашка «запись» (rec-ink)', '#FF7A70', '#40201F', '5.2:1'), C('Тост', '#0F1A24', '#E8EEF4', '15.1:1')
+    ];
+    return { blue, themes: [mk('L', 'Светлая тема', 'белый фон', L, cl), mk('D', 'Тёмная тема', 'графитово-синий', D, cd)] };
+  }
+}
+</script>
+</body>
+</html>

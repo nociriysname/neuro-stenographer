@@ -1,2 +1,5 @@
 test_id,timestamp_utc,commit,device,file_name,audio_duration_sec,speakers_ref,speakers_hyp,processing_sec,rtf,wer,der,boundary_err_ms,asr_model,diar_model,llm_model,notes
 diar-001,2026-11-07T19:08:20Z,9d217d3+wip,Pixel 9a emulator (arm64; Apple M5 host),kotovice_dialog.wav,32.2,2,2,1.483,0.046,,0.000,,,Nemotron-3-Diarization q8_0,,"синтетика TTS; DER с collar 250 мс; без collar 9.56 % (pad_onset); путаница 0 %"
+asr-001,2026-11-07T19:36:38Z,c24be37+wip,Pixel 9a emulator (arm64; Apple M5 host),kotovice_dialog.wav,32.2,,,4.361,0.135,0.020,,,GigaAM-v3 e2e_rnnt int8,,,"распознавание целиком без нарезки; загрузка модели 3.6 с; дефис склеен"
+asr-002,2026-11-07T19:37:38Z,c24be37+wip,Pixel 9a emulator (arm64; Apple M5 host),kotovice_dialog.wav,32.2,,,2.534,0.079,0.020,,,GigaAM-v3 rnnt int8,,,"распознавание целиком без нарезки; загрузка модели 3.2 с; дефис склеен"
+pipe-001,2026-11-07T19:39:58Z,c24be37+wip,Pixel 9a emulator (arm64; Apple M5 host),kotovice_dialog.wav,32.2,2,2,10.276,0.319,0.020,0.025,48,GigaAM-v3 e2e_rnnt int8,Nemotron-3-Diarization q8_0,,"весь конвейер, повторный запуск; DER без collar; LLM не подключена"

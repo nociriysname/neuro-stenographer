@@ -48,6 +48,8 @@ __pycache__/
 *.nemo
 *.safetensors
 src/android/**/libs/*.aar
+src/android/third_party/maven/
+.cache/
 
 # Keep large demo media outside Git unless intentionally included
 artifacts/demo/*.mp4

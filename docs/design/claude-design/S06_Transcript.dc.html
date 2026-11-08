@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Расшифровка: Лента разговора</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.seg>button{border:0;background:none;cursor:pointer;font-family:inherit}
+.seg>button.on{background:var(--bg)}
+.rail{position:relative;flex:none;margin:6px 0 12px 8px;border-radius:9px;background:var(--s1);border:1px solid var(--line)}
+.rail>i{position:absolute;display:block;border-radius:2px;min-height:2px}
+.rail>.vp{left:-4px;right:-4px;height:30px;border:2px solid var(--p);border-radius:9px;background:color-mix(in srgb,var(--p) 14%,transparent);min-height:0}
+.lst{flex:1;min-width:0;position:relative;overflow:hidden;padding:0 12px 0 10px}
+.fade{position:absolute;left:0;right:0;bottom:0;height:44px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none}
+.pbn{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:6px 12px;border-radius:16px;border:1px solid var(--line);background:var(--s1);color:var(--tx);text-align:left;font-family:inherit;cursor:pointer;margin-bottom:4px}
+.pbn .pt{width:36px;height:36px;border-radius:11px;background:var(--p-soft);color:var(--p-ink);display:flex;align-items:center;justify-content:center;flex:none}
+.msg{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.msg.me{flex-direction:row-reverse}
+.bub{max-width:84%;padding:8px 14px 10px;border-radius:18px 18px 18px 6px;background:color-mix(in srgb,var(--c) 10%,var(--bg));border:1px solid color-mix(in srgb,var(--c) 30%,transparent)}
+.me .bub{border-radius:18px 18px 6px 18px;background:color-mix(in srgb,var(--c) 16%,var(--bg))}
+.bub.cur{box-shadow:0 0 0 2px var(--p)}
+.bub p{margin:0;font-size:16px;line-height:24px}
+.bub p+p{margin-top:6px}
+.nm{display:flex;align-items:center;gap:6px;min-height:22px;font-size:12px;line-height:16px;font-weight:600;color:var(--tx2);white-space:nowrap}
+.me .nm{justify-content:flex-end}
+.tcb{position:relative;min-height:22px;padding:0 4px;border:0;background:none;color:var(--p-ink);font-family:inherit;font-size:12px;line-height:16px;font-weight:600;cursor:pointer}
+.tcb::after{content:"";position:absolute;left:-6px;right:-6px;top:-13px;bottom:-13px}
+.emt{display:inline-flex;align-items:center;gap:5px;margin-top:4px;font-size:12px;line-height:16px;font-weight:500;color:var(--tx2);white-space:nowrap}
+.emt i{width:7px;height:7px;border-radius:3px;background:var(--ec)}
+.tri{padding:10px 10px 12px;border-radius:14px}
+.tri.cur{background:var(--p-soft)}
+.tri p{margin:4px 0 0;font-size:16px;line-height:26px}
+.tri p+p{margin-top:6px}
+.pop{position:absolute;right:12px;top:62px;width:300px;padding:6px 0;background:var(--bg);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh2)}
+.pi{display:flex;align-items:center;gap:12px;min-height:52px;padding:0 16px;font-size:15px;font-weight:600}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5.5M11.5 6l-6 6 6 6"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l4.5 4.5"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.25" fill="currentColor"/><circle cx="12" cy="12" r="1.25" fill="currentColor"/><circle cx="18.5" cy="12" r="1.25" fill="currentColor"/></symbol>
+<symbol id="i-protocol" viewBox="0 0 24 24"><rect x="5.5" y="5" width="13" height="15.5" rx="2"/><rect x="9" y="3" width="6" height="3.5" rx="1.2"/><path d="M9 10.5h6M9 14h6M9 17.5h3"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4L9.2 5.1A.8.8 0 0 0 8 5.8z"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6.5" y="5.5" width="3.5" height="13" rx="1.2"/><rect x="14" y="5.5" width="3.5" height="13" rx="1.2"/></symbol>
+<symbol id="i-skip-silence" viewBox="0 0 24 24"><path d="M3.5 10v4M7 7.5v9M17 7.5v9M20.5 10v4M10 12h4M12.5 10l2 2-2 2"/></symbol>
+<symbol id="i-speed" viewBox="0 0 24 24"><path d="M4.5 17.5a8.5 8.5 0 1 1 15 0"/><path d="M12 13.5l4-4"/><circle cx="12" cy="13.5" r="1.25"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4.5 19.5l.8-3.9L16.6 4.3a1.7 1.7 0 0 1 2.4 0l.7.7a1.7 1.7 0 0 1 0 2.4L8.4 18.7l-3.9.8zM14.5 6.5l3 3"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 7.5l4-4 4 4M5 13v4.5A1.5 1.5 0 0 0 6.5 19h11a1.5 1.5 0 0 0 1.5-1.5V13"/></symbol>
+<symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14c.9 1.4 2.1 2 3.5 2s2.6-.6 3.5-2M9 9.5v.5M15 9.5v.5"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.9" r=".6" fill="currentColor"/></symbol>
+<symbol id="i-speaker" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.75"/><path d="M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5"/></symbol>
+<symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 10v4M8 6.5v11M12 3.5v17M16 8v8M20 10.5v3"/></symbol>
+</defs></svg>
+<div class="board" style="width:1632px;height:1810px">
+  <div class="col g4"><div class="cap"><b>Экран 6</b> Расшифровка · «Лента разговора»</div><h1>Один экран, два формата: «Диалог» и «Стенограмма» · общая шкала спикеров</h1>
+    <div class="sub" style="max-width:1100px">Цветная шкала спикеров — отрезки во времени по данным диаризации — проходит через экран: вертикальная лента слева (дорожки спикеров, наложенная речь, точка воспроизведения, совпадения поиска, всплески эмоций) и горизонтальная шкала вместо ползунка в плеере. Эмоции — маленькая метка у реплики, без заливки.</div></div>
+  <div class="grid">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="8">
+      <div class="cell">
+        <div class="cap"><b class="{{p.bc}}">{{p.theme}}</b>{{p.label}}</div>
+        <div class="ph ns {{p.cls}}">
+
+          <sc-if value="{{p.nbar}}" hint-placeholder-val="{{ true }}">
+            <div class="fx ai" style="padding:8px 4px 0;min-height:68px">
+              <button class="ib g" aria-label="Назад"><svg class="ic" aria-hidden="true"><use href="#i-back"></use></svg></button>
+              <div class="f1" style="padding:0 4px;min-width:0"><div class="t-lg" style="line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Планёрка отдела разработки</div><div class="t-cp c2 num">48:12 · 3 говорящих · 42 реплики</div></div>
+              <button class="ib g" aria-label="Поиск по тексту"><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg></button>
+              <button class="ib g" aria-label="Ещё"><svg class="ic" aria-hidden="true"><use href="#i-more"></use></svg></button>
+            </div>
+          </sc-if>
+          <sc-if value="{{p.search}}" hint-placeholder-val="{{ false }}">
+            <div class="fx ai g4" style="padding:8px 8px 0 4px;min-height:68px">
+              <button class="ib g" aria-label="Закрыть поиск"><svg class="ic" aria-hidden="true"><use href="#i-back"></use></svg></button>
+              <label class="fld f f1" style="min-width:0"><svg class="ic s" aria-hidden="true"><use href="#i-search"></use></svg><input type="text" value="бюджет" aria-label="Поиск по тексту"><span class="t-cp c2 num nw">2 из 3</span></label>
+              <button class="ib s" aria-label="Предыдущее совпадение"><svg class="ic s" style="transform:rotate(-90deg)" aria-hidden="true"><use href="#i-chevron"></use></svg></button>
+              <button class="ib s" aria-label="Следующее совпадение"><svg class="ic s" style="transform:rotate(90deg)" aria-hidden="true"><use href="#i-chevron"></use></svg></button>
+            </div>
+          </sc-if>
+
+          <div class="pad" style="padding-top:2px;padding-bottom:8px"><div class="seg"><button class="{{p.sa}}">Диалог</button><button class="{{p.sb}}">Стенограмма</button></div></div>
+
+          <div class="fx" style="flex:1;min-height:0">
+            <div class="rail" style="width:{{p.rw}}px">
+              <sc-for list="{{p.rail}}" as="r" hint-placeholder-count="40"><i style="{{r}}"></i></sc-for>
+              <sc-for list="{{p.ticks}}" as="r" hint-placeholder-count="8"><i style="{{r}}"></i></sc-for>
+              <i class="vp" style="top:calc(25.1% - 15px)"></i>
+            </div>
+            <div class="lst">
+
+              <sc-if value="{{p.dlgN}}" hint-placeholder-val="{{ true }}">
+                <button class="pbn"><span class="pt"><svg class="ic s" aria-hidden="true"><use href="#i-protocol"></use></svg></span><span class="f1"><span class="t-lb" style="display:block">Протокол встречи</span><span class="t-cp c2" style="display:block">3 решения · 3 задачи</span></span><svg class="ic s c3" aria-hidden="true"><use href="#i-chevron"></use></svg></button>
+                <div class="msg me k1"><div class="bub"><div class="nm"><button class="tcb num">11:38</button></div><p>Коллеги, давайте вернёмся к бюджету на следующий квартал. У нас три вопроса.</p><span class="emt e-n"><i></i>нейтрально</span></div></div>
+                <div class="msg k2"><span class="sb s k2">И</span><div class="bub"><div class="nm">Игорь<button class="tcb num">11:56</button><span class="bdg" style="min-height:20px;padding:0 6px;font-size:12px"><svg class="ic s" style="width:14px;height:14px" aria-hidden="true"><use href="#i-wave"></use></svg>перебивает</span></div><p>Опять бюджет? Мы же обсуждали его на прошлой неделе.</p><span class="emt e-r"><i></i>раздражение</span></div></div>
+                <div class="msg me k1"><div class="bub cur"><div class="nm"><button class="tcb num">12:04</button></div><p>Именно поэтому сегодня <span class="wd">зафиксируем</span> решение. Хорошая новость: заказчик подтвердил финансирование.</p><span class="emt e-j"><i></i>радость</span></div></div>
+                <div class="msg k3"><span class="sb s k3">М</span><div class="bub"><div class="nm">Мария<button class="tcb num">12:22</button></div><p>Подтвердил полностью?</p><p>Это на двадцать процентов больше, чем мы рассчитывали.</p><span class="emt e-u"><i></i>удивление</span></div></div>
+              </sc-if>
+
+              <sc-if value="{{p.dlgS}}" hint-placeholder-val="{{ false }}">
+                <div class="msg me k1"><div class="bub"><div class="nm"><button class="tcb num">11:38</button></div><p>Коллеги, давайте вернёмся к <mark>бюджет</mark>у на следующий квартал. У нас три вопроса.</p></div></div>
+                <div class="msg k2"><span class="sb s k2">И</span><div class="bub cur"><div class="nm">Игорь<button class="tcb num">11:56</button></div><p>Опять <mark class="cur">бюджет</mark>? Мы же обсуждали его на прошлой неделе.</p></div></div>
+                <div class="msg me k1"><div class="bub"><div class="nm"><button class="tcb num">12:04</button></div><p>Именно поэтому сегодня зафиксируем решение. Хорошая новость: заказчик подтвердил финансирование.</p></div></div>
+                <div class="msg k3"><span class="sb s k3">М</span><div class="bub"><div class="nm">Мария<button class="tcb num">12:22</button></div><p>Подтвердил полностью?</p><p>Это на двадцать процентов больше, чем мы рассчитывали.</p></div></div>
+              </sc-if>
+
+              <sc-if value="{{p.trN}}" hint-placeholder-val="{{ false }}">
+                <button class="pbn"><span class="pt"><svg class="ic s" aria-hidden="true"><use href="#i-protocol"></use></svg></span><span class="f1"><span class="t-lb" style="display:block">Протокол встречи</span><span class="t-cp c2" style="display:block">3 решения · 3 задачи</span></span><svg class="ic s c3" aria-hidden="true"><use href="#i-chevron"></use></svg></button>
+                <div class="tri k1"><div class="fx ai g8"><span class="sb s k1">А</span><span class="t-lb">Анна</span><button class="tcb num">11:38 – 11:55</button><span class="emt e-n" style="margin:0 0 0 auto"><i></i>нейтрально</span></div><p>Коллеги, давайте вернёмся к бюджету на следующий квартал. У нас три вопроса.</p></div>
+                <div class="tri k2"><div class="fx ai g8"><span class="sb s k2">И</span><span class="t-lb">Игорь</span><button class="tcb num">11:56 – 12:03</button><span class="emt e-r" style="margin:0 0 0 auto"><i></i>раздражение</span></div><p>Опять бюджет? Мы же обсуждали его на прошлой неделе.</p></div>
+                <div class="tri k1 cur"><div class="fx ai g8"><span class="sb s k1">А</span><span class="t-lb">Анна</span><button class="tcb num">12:04 – 12:21</button><span class="emt e-j" style="margin:0 0 0 auto"><i></i>радость</span></div><p>Именно поэтому сегодня <span class="wd">зафиксируем</span> решение. Хорошая новость: заказчик подтвердил финансирование.</p></div>
+                <div class="tri k3"><div class="fx ai g8"><span class="sb s k3">М</span><span class="t-lb">Мария</span><button class="tcb num">12:22 – 12:36</button><span class="emt e-u" style="margin:0 0 0 auto"><i></i>удивление</span></div><p>Подтвердил полностью? Это на двадцать процентов больше, чем мы рассчитывали.</p></div>
+              </sc-if>
+
+              <sc-if value="{{p.trS}}" hint-placeholder-val="{{ false }}">
+                <div class="tri k1"><div class="fx ai g8"><span class="sb s k1">А</span><span class="t-lb">Анна</span><button class="tcb num">11:38 – 11:55</button></div><p>Коллеги, давайте вернёмся к <mark>бюджет</mark>у на следующий квартал. У нас три вопроса.</p></div>
+                <div class="tri k2 cur"><div class="fx ai g8"><span class="sb s k2">И</span><span class="t-lb">Игорь</span><button class="tcb num">11:56 – 12:03</button></div><p>Опять <mark class="cur">бюджет</mark>? Мы же обсуждали его на прошлой неделе.</p></div>
+                <div class="tri k1"><div class="fx ai g8"><span class="sb s k1">А</span><span class="t-lb">Анна</span><button class="tcb num">12:04 – 12:21</button></div><p>Именно поэтому сегодня зафиксируем решение. Хорошая новость: заказчик подтвердил финансирование.</p></div>
+                <div class="tri k3"><div class="fx ai g8"><span class="sb s k3">М</span><span class="t-lb">Мария</span><button class="tcb num">12:22 – 12:36</button></div><p>Подтвердил полностью? Это на двадцать процентов больше, чем мы рассчитывали.</p></div>
+              </sc-if>
+
+              <div class="fade"></div>
+            </div>
+          </div>
+
+          <div class="mp" style="gap:6px">
+            <div class="spw"><div class="sps"><sc-for list="{{scale}}" as="s" hint-placeholder-count="40"><i style="{{s}}"></i></sc-for></div><b class="phd" style="left:25.1%"></b></div>
+            <div class="fx jb"><span class="t-cp num c2">12:09</span><span class="t-cp num c2">48:12</span></div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-top:2px">
+              <button class="tg" style="justify-self:start;min-width:84px;min-height:48px"><svg class="ic s" aria-hidden="true"><use href="#i-speed"></use></svg>{{p.speed}}</button>
+              <button class="pb" aria-label="{{p.playLabel}}"><sc-if value="{{p.playing}}" hint-placeholder-val="{{ true }}"><svg class="ic l" aria-hidden="true"><use href="#i-pause"></use></svg></sc-if><sc-if value="{{p.paused}}" hint-placeholder-val="{{ false }}"><svg class="ic l" aria-hidden="true"><use href="#i-play"></use></svg></sc-if></button>
+              <button class="ib {{p.skip}}" style="justify-self:end" aria-label="Пропускать тишину"><svg class="ic" aria-hidden="true"><use href="#i-skip-silence"></use></svg></button>
+            </div>
+          </div>
+
+          <sc-if value="{{p.menu}}" hint-placeholder-val="{{ false }}">
+            <div class="scrim"></div>
+            <div class="pop">
+              <div class="pi"><svg class="ic c2" aria-hidden="true"><use href="#i-smile"></use></svg><span class="f1">Эмоции в тексте</span><button class="sw on" role="switch" aria-checked="true" aria-label="Эмоции в тексте"></button></div>
+              <div class="col g8" style="padding:0 16px 12px">
+                <div class="fx wr g4"><span class="em e-n"><i></i>нейтрально</span><span class="em e-j"><i></i>радость</span><span class="em e-r"><i></i>раздражение</span><span class="em e-s"><i></i>грусть</span><span class="em e-u"><i></i>удивление</span></div>
+                <div class="t-cp c2 fx g4"><svg class="ic s nw" aria-hidden="true"><use href="#i-info"></use></svg><span>Подсказка модели, а не оценка человека. Можно выключить.</span></div>
+              </div>
+              <div class="hr"></div>
+              <div class="pi"><svg class="ic c2" aria-hidden="true"><use href="#i-speaker"></use></svg><span class="f1">Это я</span><span class="t-bs cp">Анна</span></div>
+              <div class="pi"><svg class="ic c2" aria-hidden="true"><use href="#i-edit"></use></svg><span class="f1">Переименовать говорящих</span></div>
+              <div class="pi"><svg class="ic c2" aria-hidden="true"><use href="#i-protocol"></use></svg><span class="f1">Протокол встречи</span></div>
+              <div class="pi"><svg class="ic c2" aria-hidden="true"><use href="#i-share"></use></svg><span class="f1">Экспорт</span></div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1632,"height":1810}}'>
+class Component extends DCLogic {
+  renderVals() {
+    let seed = 11;
+    const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    const defs = [{ gap: 5, len: 5 }, { gap: 9, len: 3 }, { gap: 12, len: 3.5 }];
+    const segs = defs.map((d, i) => {
+      const out = []; let t = rnd() * 3;
+      while (t < 98) { const len = Math.min(0.8 + rnd() * d.len, 99.5 - t); out.push([t, len]); t += len + 0.8 + rnd() * d.gap; }
+      return out.filter((s) => s[0] + s[1] < 23.8 || s[0] > 26.4);
+    });
+    segs[0].push([24.1, 0.6], [25.0, 0.7]); segs[1].push([24.55, 0.45]); segs[2].push([25.9, 0.5]);
+    const lane = (left, w, step) => segs.flatMap((arr, i) => arr.map((s) => 'top:' + s[0].toFixed(2) + '%;height:' + s[1].toFixed(2) + '%;left:' + (left + i * step) + 'px;width:' + w + 'px;background:var(--sp' + (i === 0 ? 1 : i === 1 ? 2 : 3) + ')'));
+    const wide = lane(3, 7, 9), thin = lane(2, 3, 4);
+    const emo = [[8, 'j'], [24.6, 'r'], [25.4, 'j'], [26.6, 'u'], [41, 's'], [58, 'r'], [72, 'j'], [88, 'u']];
+    const tickW = emo.map((e) => 'top:' + e[0] + '%;left:33px;width:7px;height:3px;border-radius:2px;background:var(--ec-' + e[1] + ')');
+    const sch = [6.1, 24.6, 61.3];
+    const sW = sch.map((t) => 'top:' + t + '%;left:31px;width:9px;height:3px;border-radius:2px;background:var(--ac)');
+    const sT = sch.map((t) => 'top:' + t + '%;left:0;width:14px;height:3px;border-radius:2px;background:var(--ac)');
+    // горизонтальная шкала
+    const slices = []; const N = 200;
+    for (let k = 0; k < N; k++) {
+      const t = (k + 0.5) * 100 / N; let c = 'transparent';
+      for (let i = 0; i < 3; i++) { if (segs[i].some((s) => t >= s[0] && t <= s[0] + s[1])) { c = 'var(--sp' + (i + 1) + ')'; break; } }
+      slices.push([c, t < 25.1 ? 1 : 0.4]);
+    }
+    const scale = []; slices.forEach((s) => { const last = scale[scale.length - 1]; if (last && last.c === s[0] && last.o === s[1]) { last.n += 1; } else { scale.push({ c: s[0], o: s[1], n: 1 }); } });
+    const scaleSt = scale.map((s) => 'flex:' + s.n + ';background:' + s.c + ';opacity:' + s.o);
+    const mk = (cls, fmt, mode) => {
+      const dlg = fmt === 'dlg', search = mode === 'search', menu = mode === 'menu';
+      const L = { dlg: 'Диалог', tr: 'Стенограмма' };
+      return {
+        cls, bc: cls === 'L' ? '' : 'd', theme: cls === 'L' ? 'Светлая' : 'Тёмная',
+        label: L[fmt] + (search ? ' · поиск «бюджет», пауза' : menu ? ' · меню «Ещё»: эмоции и легенда' : ' · играет'),
+        nbar: !search, search, menu, sa: dlg ? 'on' : '', sb: dlg ? '' : 'on',
+        rw: dlg ? 44 : 16, rail: dlg ? wide : thin, ticks: dlg ? (search ? sW : tickW) : (search ? sT : []),
+        dlgN: dlg && !search, dlgS: dlg && search, trN: !dlg && !search, trS: !dlg && search,
+        playing: !search, paused: search, playLabel: search ? 'Играть' : 'Пауза', skip: search ? '' : 'on', speed: search ? '1×' : '1.5×'
+      };
+    };
+    return { scale: scaleSt, phones: [mk('L', 'dlg', 'play'), mk('D', 'dlg', 'play'), mk('L', 'tr', 'play'), mk('D', 'tr', 'play'), mk('L', 'dlg', 'search'), mk('D', 'tr', 'search'), mk('L', 'dlg', 'menu'), mk('D', 'dlg', 'menu')] };
+  }
+}
+</script>
+</body>
+</html>

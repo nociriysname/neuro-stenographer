@@ -22,6 +22,14 @@ internal object Resampler {
     /** Запас по полосе: срез на 97 % от частоты Найквиста, чтобы переходная полоса не залезала за неё. */
     private const val BANDWIDTH = 0.97
 
+    /** Окно Блэкмана: a0 + a1·cos(t) + a2·cos(2t). */
+    private const val BLACKMAN_A0 = 0.42
+    private const val BLACKMAN_A1 = 0.5
+    private const val BLACKMAN_A2 = 0.08
+
+    /** Около нуля sinc(x) считаем равным 1, чтобы не делить 0 на 0. */
+    private const val SINC_EPSILON = 1e-9
+
     fun resample(input: FloatArray, fromRate: Int, toRate: Int): FloatArray {
         require(fromRate > 0 && toRate > 0) { "Sample rates must be positive: $fromRate -> $toRate" }
         if (fromRate == toRate || input.isEmpty()) return input.copyOf()
@@ -58,12 +66,12 @@ internal object Resampler {
             (cutoff * sinc(cutoff * x) * blackman(x, halfTaps.toDouble())).toFloat()
         }
 
-    private fun sinc(x: Double): Double = if (abs(x) < 1e-9) 1.0 else sin(PI * x) / (PI * x)
+    private fun sinc(x: Double): Double = if (abs(x) < SINC_EPSILON) 1.0 else sin(PI * x) / (PI * x)
 
     private fun blackman(x: Double, half: Double): Double {
         if (abs(x) > half) return 0.0
         val t = PI * x / half
-        return 0.42 + 0.5 * cos(t) + 0.08 * cos(2 * t)
+        return BLACKMAN_A0 + BLACKMAN_A1 * cos(t) + BLACKMAN_A2 * cos(2 * t)
     }
 
     private tailrec fun gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b)

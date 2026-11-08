@@ -10,6 +10,9 @@
         android:name="android.permission.INTERNET"
         tools:node="remove" />
 
+    <!-- Микрофон — только для записи разговора; спрашиваем на последнем шаге онбординга. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:name=".StenographerApp"
         android:allowBackup="false"

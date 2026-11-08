@@ -1,8 +1,6 @@
 package ru.nuclearhack.stenographer.core.domain.usecase
 
 import dev.zacsweers.metro.Inject
-import kotlin.time.TimeSource
-import kotlin.time.measureTimedValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -13,6 +11,8 @@ import ru.nuclearhack.stenographer.core.domain.processing.ChunkPlanner
 import ru.nuclearhack.stenographer.core.domain.processing.TranscriptAssembler
 import ru.nuclearhack.stenographer.core.domain.repository.AudioRepository
 import ru.nuclearhack.stenographer.core.model.AudioRef
+import kotlin.time.TimeSource
+import kotlin.time.measureTimedValue
 
 /**
  * Полный конвейер: декодирование → диаризация → нарезка → ASR → сборка реплик → LLM-постобработка.
@@ -45,11 +45,15 @@ class TranscribeAudioUseCase(
         }
 
         val chunks = chunkPlanner.plan(diarized.value, pcm.durationMs)
+        send(TranscriptionEvent.Progress(ProcessingStage.Recognition, fraction = 0f))
         val recognized = measureTimedValue {
-            buildList {
-                chunks.forEachIndexed { index, chunk ->
-                    send(TranscriptionEvent.Progress(ProcessingStage.Recognition, index.toFloat() / chunks.size))
-                    addAll(recognizer.recognize(pcm.slice(chunk.startMs, chunk.endMs), offsetMs = chunk.startMs))
+            // Модель ASR загружается один раз на все фрагменты и освобождается до LLM-этапа.
+            recognizer.withModelLoaded {
+                buildList {
+                    chunks.forEachIndexed { index, chunk ->
+                        addAll(recognizer.recognize(pcm.slice(chunk.startMs, chunk.endMs), offsetMs = chunk.startMs))
+                        send(TranscriptionEvent.Progress(ProcessingStage.Recognition, (index + 1f) / chunks.size))
+                    }
                 }
             }
         }

@@ -11,10 +11,18 @@ import androidx.navigation3.ui.NavDisplay
 import kotlinx.serialization.Serializable
 import ru.nuclearhack.stenographer.core.model.AudioRef
 import ru.nuclearhack.stenographer.feature.home.presentation.HomeScreen
+import ru.nuclearhack.stenographer.feature.onboarding.presentation.OnboardingScreen
+import ru.nuclearhack.stenographer.feature.settings.presentation.SettingsScreen
 import ru.nuclearhack.stenographer.feature.transcript.presentation.TranscriptScreen
 
 @Serializable
+data object OnboardingRoute : NavKey
+
+@Serializable
 data object HomeRoute : NavKey
+
+@Serializable
+data object SettingsRoute : NavKey
 
 @Serializable
 data class TranscriptRoute(val audioUri: String) : NavKey
@@ -22,10 +30,11 @@ data class TranscriptRoute(val audioUri: String) : NavKey
 /**
  * Фичи не знают друг о друге: экран отдаёт наружу колбэки, а переходы связывает только :app.
  * ViewModelStore-декоратор даёт каждому экрану в back stack собственные ViewModel.
+ * [showOnboarding] — первый запуск: онбординг вместо главной.
  */
 @Composable
-fun StenographerNavHost(modifier: Modifier = Modifier) {
-    val backStack = rememberNavBackStack(HomeRoute)
+fun StenographerNavHost(showOnboarding: Boolean, modifier: Modifier = Modifier) {
+    val backStack = rememberNavBackStack(if (showOnboarding) OnboardingRoute else HomeRoute)
 
     NavDisplay(
         backStack = backStack,
@@ -36,8 +45,22 @@ fun StenographerNavHost(modifier: Modifier = Modifier) {
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
+            entry<OnboardingRoute> {
+                OnboardingScreen(
+                    onFinished = {
+                        backStack.add(HomeRoute)
+                        backStack.remove(OnboardingRoute)
+                    },
+                )
+            }
             entry<HomeRoute> {
-                HomeScreen(onOpenTranscript = { audio -> backStack.add(TranscriptRoute(audio.value)) })
+                HomeScreen(
+                    onOpenTranscript = { audio -> backStack.add(TranscriptRoute(audio.value)) },
+                    onOpenSettings = { backStack.add(SettingsRoute) },
+                )
+            }
+            entry<SettingsRoute> {
+                SettingsScreen(onBack = { backStack.removeLastOrNull() })
             }
             entry<TranscriptRoute> { route ->
                 TranscriptScreen(

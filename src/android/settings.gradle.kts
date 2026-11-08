@@ -18,6 +18,14 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // sherpa-onnx публикует AAR только в GitHub Releases. tools/fetch_models.sh кладёт его сюда
+        // в раскладке Maven (с проверкой SHA-256), а Gradle берёт как обычную внешнюю зависимость.
+        maven {
+            name = "thirdPartyPrebuilt"
+            url = uri("third_party/maven")
+            metadataSources { artifact() }
+            content { includeGroup("com.k2fsa.sherpa.onnx") }
+        }
     }
 }
 
@@ -46,3 +54,8 @@ include(":sources:core:core-llm")
 // feature — только presentation. Зависят от core-domain и common-uikit, но не от data/ML-модулей.
 include(":sources:feature:feature-home")
 include(":sources:feature:feature-transcript")
+include(":sources:feature:feature-onboarding")
+include(":sources:feature:feature-settings")
+
+// Свои правила detekt (подключаются конвенцией steno.detekt ко всем модулям).
+include(":detekt-rules")

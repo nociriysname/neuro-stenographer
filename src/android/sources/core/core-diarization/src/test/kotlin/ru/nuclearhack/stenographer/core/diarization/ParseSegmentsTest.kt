@@ -10,8 +10,12 @@ class ParseSegmentsTest {
     @Test
     fun `native triples become zero-based segments in milliseconds`() {
         val raw = doubleArrayOf(
-            3.2, 6.0006, 2.0,
-            0.51, 2.9, 1.0,
+            3.2,
+            6.0006,
+            2.0,
+            0.51,
+            2.9,
+            1.0,
         )
 
         assertEquals(
@@ -26,8 +30,12 @@ class ParseSegmentsTest {
     @Test
     fun `empty and degenerate segments are dropped`() {
         val raw = doubleArrayOf(
-            1.0, 1.0, 1.0,
-            2.0, 3.0, 0.0,
+            1.0,
+            1.0,
+            1.0,
+            2.0,
+            3.0,
+            0.0,
         )
 
         assertEquals(emptyList(), parseSegments(raw))

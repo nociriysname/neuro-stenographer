@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Обработка</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ds.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.vl{width:2px;height:12px;margin-left:15px;background:var(--line2)}
+.vl.d{background:var(--p)}
+.stg{display:flex;align-items:flex-start;gap:12px;min-height:44px}
+.breathe{display:flex;align-items:center;justify-content:center;gap:3px;height:28px}
+.breathe i{width:4px;border-radius:2px;background:var(--p);opacity:.45;animation:br 2.4s ease-in-out infinite}
+@keyframes br{0%,100%{transform:scaleY(.55)}50%{transform:scaleY(1)}}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-chip" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+</defs></svg>
+<div class="board" style="width:856px;height:980px">
+  <div class="col g4"><div class="cap"><b>Экран 5</b> Обработка · этапы, оценка времени, отмена</div><h1>Живое, но ненавязчивое состояние</h1></div>
+  <div class="grid">
+    <sc-for list="{{phones}}" as="p" hint-placeholder-count="2">
+      <div class="cell">
+        <div class="cap"><b class="{{p.bc}}">{{p.theme}}</b>{{p.label}}</div>
+        <div class="ph ns {{p.cls}}">
+          <div class="top"><div class="f1"><div class="ey">Расшифровка</div><h2 style="font-size:20px;line-height:26px;overflow-wrap:anywhere">Планёрка отдела разработки</h2></div></div>
+          <div class="col ai" style="padding:12px 20px 0">
+            <div class="ring"><svg width="152" height="152" viewBox="0 0 152 152" aria-hidden="true"><circle cx="76" cy="76" r="66" fill="none" stroke="var(--s2)" stroke-width="10"></circle><circle cx="76" cy="76" r="66" fill="none" stroke="var(--p)" stroke-width="10" stroke-linecap="round" stroke-dasharray="158 415"></circle></svg><div class="rt"><span class="t-d num" style="font-size:40px;line-height:44px">38%</span><span class="t-cp c2">готово</span></div></div>
+            <div class="t-su num" style="margin-top:12px">Осталось около 3 мин 40 с</div>
+            <div class="t-bs c2" style="margin-top:2px">Секретарь внимательно слушает</div>
+            <div class="breathe" style="margin-top:8px">
+              <sc-for list="{{br}}" as="b" hint-placeholder-count="21"><i style="{{b}}"></i></sc-for>
+            </div>
+          </div>
+          <div class="pad col" style="margin-top:16px">
+            <div class="stg"><span class="node done"><svg class="ic s" aria-hidden="true"><use href="#i-check"></use></svg></span><div class="f1"><div class="t-lb" style="line-height:32px">Декодирование</div></div><span class="t-cp c2 num" style="line-height:32px">0:08</span></div>
+            <div class="vl d"></div>
+            <div class="stg"><span class="node act">2</span><div class="f1"><div class="t-lb" style="line-height:32px">Кто говорит</div><div class="t-cp c2" style="margin-bottom:6px">определяем голоса · 64%</div><div class="bar sm"><i style="width:64%"></i></div></div><span class="t-cp cp num" style="line-height:32px">≈ 1:20</span></div>
+            <div class="vl"></div>
+            <div class="stg"><span class="node">3</span><div class="f1"><div class="t-lb c2" style="line-height:32px">Распознавание речи</div></div><span class="t-cp c3 num" style="line-height:32px">≈ 2:10</span></div>
+            <div class="vl"></div>
+            <div class="stg"><span class="node">4</span><div class="f1"><div class="t-lb c2" style="line-height:32px">Постобработка</div></div><span class="t-cp c3 num" style="line-height:32px">≈ 0:30</span></div>
+          </div>
+          <div class="col g12" style="margin-top:auto;padding:12px 20px 20px">
+            <div class="fx ai g8 jc c2 t-cp tc" style="min-height:24px"><svg class="ic s" aria-hidden="true"><use href="#i-chip"></use></svg>Можно свернуть приложение, работа продолжится</div>
+            <button class="btn s blk"><svg class="ic" aria-hidden="true"><use href="#i-close"></use></svg>Отменить расшифровку</button>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":856,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const br = Array.from({ length: 21 }, (_, i) => 'height:' + (10 + Math.round(Math.abs(Math.sin(i * 0.7)) * 16)) + 'px;animation-delay:' + (i * 0.11).toFixed(2) + 's');
+    return { br, phones: [
+      { cls: 'L', bc: '', theme: 'Светлая', label: 'этап 2 из 4' },
+      { cls: 'D', bc: 'd', theme: 'Тёмная', label: 'этап 2 из 4' }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

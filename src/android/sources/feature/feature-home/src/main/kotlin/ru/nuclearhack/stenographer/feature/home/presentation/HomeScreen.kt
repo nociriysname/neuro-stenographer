@@ -1,42 +1,58 @@
 package ru.nuclearhack.stenographer.feature.home.presentation
 
 import android.content.Intent
+import android.content.res.Configuration
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import ru.nuclearhack.stenographer.common.uikit.theme.StenographerTheme
+import kotlinx.coroutines.launch
+import ru.nuclearhack.stenographer.common.uikit.components.badge.StenoBadge
+import ru.nuclearhack.stenographer.common.uikit.components.badge.StenoBadgeTone
+import ru.nuclearhack.stenographer.common.uikit.components.badge.StenoStatusDot
+import ru.nuclearhack.stenographer.common.uikit.components.bar.StenoTopBar
+import ru.nuclearhack.stenographer.common.uikit.components.button.StenoIconButton
+import ru.nuclearhack.stenographer.common.uikit.components.button.StenoIconButtonVariant
+import ru.nuclearhack.stenographer.common.uikit.components.overlay.StenoToastHostState
+import ru.nuclearhack.stenographer.common.uikit.components.overlay.rememberStenoToastHostState
+import ru.nuclearhack.stenographer.common.uikit.components.scaffold.StenoScaffold
+import ru.nuclearhack.stenographer.common.uikit.components.state.StenoStatePanel
+import ru.nuclearhack.stenographer.common.uikit.components.surface.StenoActionCard
+import ru.nuclearhack.stenographer.common.uikit.components.surface.StenoActionCardStyle
+import ru.nuclearhack.stenographer.common.uikit.components.surface.StenoCard
+import ru.nuclearhack.stenographer.common.uikit.components.surface.StenoDivider
+import ru.nuclearhack.stenographer.common.uikit.components.surface.StenoListRow
+import ru.nuclearhack.stenographer.common.uikit.components.text.StenoText
+import ru.nuclearhack.stenographer.common.uikit.foundation.icon.StenoIcons
+import ru.nuclearhack.stenographer.common.uikit.foundation.icon.StenoIllustrations
+import ru.nuclearhack.stenographer.common.uikit.foundation.theme.StenoTheme
+import ru.nuclearhack.stenographer.common.uikit.foundation.theme.StenoThemedSurface
 import ru.nuclearhack.stenographer.common.uikit.udf.CollectEffects
 import ru.nuclearhack.stenographer.core.domain.engine.EngineInfo
 import ru.nuclearhack.stenographer.core.domain.engine.EngineKind
 import ru.nuclearhack.stenographer.core.model.AudioRef
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
     onOpenTranscript: (AudioRef) -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: HomeViewModel = metroViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -58,57 +74,105 @@ fun HomeScreen(
         }
     }
 
-    HomeContent(state = state, onPickAudio = { pickAudio.launch(arrayOf("audio/*")) })
+    val toasts = rememberStenoToastHostState()
+    val scope = rememberCoroutineScope()
+    val today = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("d MMMM", Locale.forLanguageTag("ru"))) }
+
+    HomeContent(
+        state = state,
+        today = today,
+        toasts = toasts,
+        onPickAudio = { pickAudio.launch(arrayOf("audio/*")) },
+        onRecord = { scope.launch { toasts.show("Запись появится в следующей версии", icon = StenoIcons.Mic) } },
+        onOpenSettings = onOpenSettings,
+    )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** Содержимое главного экрана: два действия, готовность моделей и подсказка о пустой истории. */
 @Composable
-private fun HomeContent(state: HomeState, onPickAudio: () -> Unit) {
-    Scaffold(topBar = { TopAppBar(title = { Text("Нейро-стенографист") }) }) { padding ->
+private fun HomeContent(
+    state: HomeState,
+    today: String,
+    toasts: StenoToastHostState,
+    onPickAudio: () -> Unit,
+    onRecord: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    val spacing = StenoTheme.spacing
+    StenoScaffold(
+        topBar = {
+            StenoTopBar(title = "Главная", eyebrow = today) {
+                StenoIconButton(
+                    icon = StenoIcons.Settings,
+                    contentDescription = "Настройки",
+                    onClick = onOpenSettings,
+                    variant = StenoIconButtonVariant.Ghost,
+                )
+            }
+        },
+        toastHostState = toasts,
+    ) { padding ->
         Column(
             modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(padding)
-                .padding(16.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(horizontal = spacing.screen, vertical = spacing.s4),
+            verticalArrangement = Arrangement.spacedBy(spacing.s3),
         ) {
-            Text(
-                text = "Расшифровка разговора прямо на телефоне: кто говорил, когда и что. Без интернета.",
-                style = MaterialTheme.typography.bodyLarge,
+            PrivacyBadges(state.engines)
+            StenoActionCard(
+                title = "Записать разговор",
+                subtitle = "Скоро: диктофон с паузой в любой момент",
+                icon = StenoIcons.Record,
+                onClick = onRecord,
+                modifier = Modifier.padding(top = spacing.s2),
             )
-            Button(onClick = onPickAudio, modifier = Modifier.fillMaxWidth()) {
-                Text("Выбрать аудиофайл")
-            }
-            OutlinedButton(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth()) {
-                Text("Записать разговор — скоро")
-            }
-            EnginesCard(state.engines)
+            StenoActionCard(
+                title = "Импортировать файл",
+                subtitle = "MP3, M4A, WAV, OGG, FLAC",
+                icon = StenoIcons.Import,
+                onClick = onPickAudio,
+                style = StenoActionCardStyle.Secondary,
+            )
+            EnginesCard(state.engines, modifier = Modifier.padding(top = spacing.s2))
+            StenoStatePanel(
+                title = "Расшифровок пока нет",
+                message = "Импортируйте аудиофайл — готовая расшифровка с разбивкой по говорящим появится здесь.",
+                illustration = StenoIllustrations.EmptyHistory,
+                modifier = Modifier.padding(top = spacing.s2),
+            )
         }
     }
 }
 
+/** Плашки приватности и готовности моделей. */
 @Composable
-private fun EnginesCard(engines: List<EngineInfo>) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Модели на устройстве", style = MaterialTheme.typography.titleMedium)
-            engines.forEach { engine ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = if (engine.isReady) "●" else "○",
-                        color = if (engine.isReady) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Column {
-                        Text("${engine.kind.title()}: ${engine.modelName}", style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            text = "${engine.runtime} · ${if (engine.isReady) "готова" else "не подключена"}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-            }
+private fun PrivacyBadges(engines: List<EngineInfo>) {
+    val ready = engines.isNotEmpty() && engines.all { it.isReady }
+    Column(verticalArrangement = Arrangement.spacedBy(StenoTheme.spacing.s2)) {
+        StenoBadge("На устройстве, без интернета", tone = StenoBadgeTone.Primary, icon = StenoIcons.Shield)
+        StenoBadge(
+            text = if (ready) "Модели готовы" else "Часть моделей не подключена",
+            tone = if (ready) StenoBadgeTone.Success else StenoBadgeTone.Warning,
+            icon = if (ready) StenoIcons.Check else StenoIcons.Warning,
+        )
+    }
+}
+
+@Composable
+private fun EnginesCard(engines: List<EngineInfo>, modifier: Modifier = Modifier) {
+    StenoCard(modifier = modifier.fillMaxWidth()) {
+        StenoText("Модели на устройстве", style = StenoTheme.typography.subtitle)
+        engines.forEachIndexed { index, engine ->
+            if (index > 0) StenoDivider()
+            StenoListRow(
+                title = "${engine.kind.title()}: ${engine.modelName}",
+                subtitle = "${engine.runtime} · ${if (engine.isReady) "готова" else "не подключена"}",
+                leading = {
+                    StenoStatusDot(color = if (engine.isReady) StenoTheme.colors.success else StenoTheme.colors.warning)
+                },
+            )
         }
     }
 }
@@ -119,19 +183,43 @@ private fun EngineKind.title(): String = when (this) {
     EngineKind.Llm -> "LLM"
 }
 
-@Preview(showBackground = true)
+private val previewState = HomeState(
+    engines = listOf(
+        EngineInfo(EngineKind.Diarization, "Nemotron-3-Diarization q8_0", "NeMo-Speech.cpp (ggml)", isReady = true),
+        EngineInfo(EngineKind.SpeechRecognition, "GigaAM-v3 e2e_rnnt", "sherpa-onnx", isReady = true),
+        EngineInfo(EngineKind.Llm, "Qwen3.5-2B Q4_K_M", "llama.cpp", isReady = false),
+    ),
+)
+
+private fun previewNoop() = Unit
+
 @Composable
-private fun HomeContentPreview() {
-    StenographerTheme(dynamicColor = false) {
+private fun HomePreview(dark: Boolean) {
+    StenoThemedSurface(darkTheme = dark) {
         HomeContent(
-            state = HomeState(
-                engines = listOf(
-                    EngineInfo(EngineKind.Diarization, "Nemotron-3-Diarization q8_0", "NeMo-Speech.cpp (ggml)", isReady = true),
-                    EngineInfo(EngineKind.SpeechRecognition, "GigaAM-v3 e2e_rnnt", "sherpa-onnx", isReady = true),
-                    EngineInfo(EngineKind.Llm, "Qwen3-1.7B Q4_K_M", "llama.cpp", isReady = false),
-                ),
-            ),
-            onPickAudio = {},
+            state = previewState,
+            today = "8 ноября",
+            toasts = rememberStenoToastHostState(),
+            onPickAudio = ::previewNoop,
+            onRecord = ::previewNoop,
+            onOpenSettings = ::previewNoop,
         )
     }
 }
+
+@Preview(name = "Светлая", showBackground = true, heightDp = 800)
+@Composable
+private fun HomeLightPreview() = HomePreview(dark = false)
+
+@Preview(
+    name = "Тёмная",
+    showBackground = true,
+    heightDp = 800,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun HomeDarkPreview() = HomePreview(dark = true)
+
+@Preview(name = "360 dp", showBackground = true, widthDp = 360, heightDp = 760)
+@Composable
+private fun HomeNarrowPreview() = HomePreview(dark = false)

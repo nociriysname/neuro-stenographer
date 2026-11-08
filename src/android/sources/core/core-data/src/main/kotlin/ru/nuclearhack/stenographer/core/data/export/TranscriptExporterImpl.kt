@@ -5,13 +5,13 @@ import android.net.Uri
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
-import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ru.nuclearhack.stenographer.core.domain.repository.TranscriptExporter
 import ru.nuclearhack.stenographer.core.domain.repository.TranscriptFormat
 import ru.nuclearhack.stenographer.core.model.DocumentRef
 import ru.nuclearhack.stenographer.core.model.Transcript
+import java.io.IOException
 
 /** Пишет экспорт в файл, который пользователь выбрал в системном диалоге «Сохранить как» (SAF). */
 @Inject

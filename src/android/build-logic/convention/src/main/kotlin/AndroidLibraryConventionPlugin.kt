@@ -9,6 +9,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("com.android.library")
+            pluginManager.apply("steno.detekt")
 
             extensions.configure<LibraryExtension> {
                 compileSdk = libs.versionInt("android-compileSdk")

@@ -32,11 +32,12 @@ class AudioFileInfoReader(private val context: Context) {
 
     private fun durationMs(uri: Uri): Long? {
         val retriever = MediaMetadataRetriever()
+        // Длительность — только для подписи в UI: если файл её не отдаёт, показываем без неё.
         return try {
-            retriever.setDataSource(context, uri)
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
-        } catch (_: RuntimeException) {
-            null
+            runCatching {
+                retriever.setDataSource(context, uri)
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            }.getOrNull()
         } finally {
             retriever.release()
         }
