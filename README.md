@@ -56,6 +56,16 @@ Android-приложение для Nuclear IT Hack (ноябрь 2026): лок�
 | [`artifacts/`](artifacts) | Видео демонстрации и сырые результаты тестов |
 | [`config/example.env`](config/example.env) | Настройки скриптов оценки |
 
+## Для проверяющих
+
+- **APK:** [Releases → v2](https://github.com/nociriysname/neuro-stenographer/releases/tag/v2), `NeiroStenograph_v2.apk`
+  (~1.5 ГБ, модели внутри, работает без интернета; arm64-v8a и x86_64 — ставится на стандартный эмулятор).
+- **Как пользоваться и где экспорт JSON:** [src/README.md → Установка и использование](src/README.md#установка-и-использование).
+- **Результаты наших тестов на эмуляторе x86_64 4 ГБ:** WER 0.8–2.7 %, DER с collar 250 мс 0.4–1.4 %,
+  RTF 0.21–0.25 — [TEST_RESULTS](docs/TEST_RESULTS.md).
+- **Архитектура и модели:** [ARCHITECTURE](docs/ARCHITECTURE.md), локальная LLM — [LLM_PROTOCOL](docs/LLM_PROTOCOL.md).
+- **Ограничения:** [LIMITATIONS](docs/LIMITATIONS.md).
+
 ## Быстрый старт
 
 ```bash
