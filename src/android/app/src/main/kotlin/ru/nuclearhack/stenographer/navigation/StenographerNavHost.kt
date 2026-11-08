@@ -11,6 +11,7 @@ import androidx.navigation3.ui.NavDisplay
 import kotlinx.serialization.Serializable
 import ru.nuclearhack.stenographer.core.model.AudioRef
 import ru.nuclearhack.stenographer.feature.home.presentation.HomeScreen
+import ru.nuclearhack.stenographer.feature.home.presentation.record.RecordScreen
 import ru.nuclearhack.stenographer.feature.onboarding.presentation.OnboardingScreen
 import ru.nuclearhack.stenographer.feature.settings.presentation.SettingsScreen
 import ru.nuclearhack.stenographer.feature.transcript.presentation.TranscriptScreen
@@ -23,6 +24,9 @@ data object HomeRoute : NavKey
 
 @Serializable
 data object SettingsRoute : NavKey
+
+@Serializable
+data object RecordRoute : NavKey
 
 @Serializable
 data class TranscriptRoute(val audioUri: String) : NavKey
@@ -62,6 +66,16 @@ fun StenographerNavHost(showOnboarding: Boolean, modifier: Modifier = Modifier, 
                 HomeScreen(
                     onOpenTranscript = { audio -> backStack.add(TranscriptRoute(audio.value)) },
                     onOpenSettings = { backStack.add(SettingsRoute) },
+                    onRecord = { backStack.add(RecordRoute) },
+                )
+            }
+            entry<RecordRoute> {
+                RecordScreen(
+                    onBack = { backStack.removeLastOrNull() },
+                    onRecorded = { uri ->
+                        backStack.removeLastOrNull()
+                        backStack.add(TranscriptRoute(uri))
+                    },
                 )
             }
             entry<SettingsRoute> {
