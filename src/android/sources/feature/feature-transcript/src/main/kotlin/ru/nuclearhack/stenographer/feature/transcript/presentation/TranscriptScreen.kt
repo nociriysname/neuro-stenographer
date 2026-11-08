@@ -35,6 +35,7 @@ import ru.nuclearhack.stenographer.feature.transcript.presentation.components.Pr
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.ProtocolContent
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.SearchTopBar
 import ru.nuclearhack.stenographer.feature.transcript.presentation.components.TranscriptDoneContent
+import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.rememberTranscriptPlayer
 
 /** Обработка записи и результат: этапы, «Диалог» / «Стенограмма», поиск и экспорт. */
 @Composable
@@ -79,7 +80,7 @@ fun TranscriptScreen(
         }
     }
 
-    TranscriptContent(state, toastHostState, onBack = onBack, onAction = viewModel::onAction)
+    TranscriptContent(state, toastHostState, onBack = onBack, onAction = viewModel::onAction, audioUri = audio.value)
 }
 
 @Composable
@@ -88,6 +89,7 @@ internal fun TranscriptContent(
     toastHostState: StenoToastHostState,
     onBack: () -> Unit,
     onAction: (TranscriptAction) -> Unit,
+    audioUri: String? = null,
 ) {
     val phase = state.phase
     val protocol = state.protocol
@@ -120,6 +122,7 @@ internal fun TranscriptContent(
                 layout = state.layout,
                 search = state.search,
                 onLayoutSelect = { onAction(TranscriptAction.LayoutSelected(it)) },
+                player = audioUri?.let { rememberTranscriptPlayer(it, phase.transcript.utterances) },
             )
 
             is TranscriptPhase.Failed -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

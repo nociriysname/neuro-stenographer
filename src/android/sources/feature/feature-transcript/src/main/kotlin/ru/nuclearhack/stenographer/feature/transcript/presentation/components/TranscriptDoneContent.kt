@@ -1,5 +1,6 @@
 package ru.nuclearhack.stenographer.feature.transcript.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
+import ru.nuclearhack.stenographer.common.uikit.components.audio.StenoMiniPlayer
 import ru.nuclearhack.stenographer.common.uikit.components.control.StenoSegmented
 import ru.nuclearhack.stenographer.common.uikit.components.state.StenoStatePanel
 import ru.nuclearhack.stenographer.common.uikit.components.text.StenoText
@@ -33,7 +35,9 @@ import ru.nuclearhack.stenographer.core.model.Utterance
 import ru.nuclearhack.stenographer.feature.transcript.presentation.SearchState
 import ru.nuclearhack.stenographer.feature.transcript.presentation.TranscriptLayout
 import ru.nuclearhack.stenographer.feature.transcript.presentation.TranscriptPhase
+import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.TranscriptPlayer
 import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.buildTimeline
+import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.playingUtterance
 import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.utteranceIndexAt
 import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.viewportRange
 
@@ -49,6 +53,7 @@ internal fun TranscriptDoneContent(
     search: SearchState,
     onLayoutSelect: (TranscriptLayout) -> Unit,
     modifier: Modifier = Modifier,
+    player: TranscriptPlayer? = null,
 ) {
     val spacing = StenoTheme.spacing
     val utterances = done.transcript.utterances
@@ -78,7 +83,24 @@ internal fun TranscriptDoneContent(
                 modifier = Modifier.weight(1f),
             )
         } else {
-            ConversationList(done, audioDurationMs, layout, search, Modifier.weight(1f))
+            ConversationList(done, audioDurationMs, layout, search, Modifier.weight(1f), player)
+            if (player != null) {
+                val timeline = remember(done.transcript, audioDurationMs) {
+                    buildTimeline(done.transcript, audioDurationMs)
+                }
+                StenoMiniPlayer(
+                    segments = timeline.segments,
+                    durationMs = timeline.durationMs,
+                    positionMs = player.positionMs,
+                    playing = player.playing,
+                    onPlayPause = player::toggle,
+                    onSeek = player::seekTo,
+                    speed = player.speed,
+                    onSpeedClick = player::cycleSpeed,
+                    skipSilence = player.skipSilence,
+                    onSkipSilenceToggle = player::toggleSkipSilence,
+                )
+            }
         }
     }
 }
@@ -90,6 +112,7 @@ private fun ConversationList(
     layout: TranscriptLayout,
     search: SearchState,
     modifier: Modifier = Modifier,
+    player: TranscriptPlayer? = null,
 ) {
     val colors = StenoTheme.colors
     val spacing = StenoTheme.spacing
@@ -108,6 +131,13 @@ private fun ConversationList(
         derivedStateOf { listState.viewport(utterances, timeline.durationMs) }
     }
     val currentUtterance = search.matches.getOrNull(search.current)?.utteranceIndex
+    val playingIndex = player?.takeIf { it.playing || it.positionMs > 0 }
+        ?.let { playingUtterance(utterances, it.positionMs) }
+
+    // Во время проигрывания список следует за звучащей репликой.
+    LaunchedEffect(playingIndex) {
+        if (player?.playing == true && playingIndex != null) listState.animateScrollToItem(playingIndex)
+    }
 
     LaunchedEffect(search.current, search.matches) {
         currentUtterance?.let { listState.animateScrollToItem(it) }
@@ -121,9 +151,12 @@ private fun ConversationList(
             modifier = Modifier.padding(start = spacing.s2, top = spacing.s1, bottom = navigationBottom + spacing.s3),
             viewportStartMs = viewport.first,
             viewportEndMs = viewport.last,
-            positionMs = null,
+            positionMs = player?.positionMs?.takeIf { player.playing || it > 0 },
             markers = markers,
-            onSeek = { ms -> scope.launch { listState.scrollToItem(utteranceIndexAt(utterances, ms)) } },
+            onSeek = { ms ->
+                player?.seekTo(ms)
+                scope.launch { listState.scrollToItem(utteranceIndexAt(utterances, ms)) }
+            },
             width = if (layout == TranscriptLayout.Dialog) spacing.s10 + spacing.s1 else spacing.s4,
         )
         LazyColumn(
@@ -142,10 +175,17 @@ private fun ConversationList(
             itemsIndexed(utterances, key = { index, _ -> index }) { index, utterance ->
                 val text = highlightedText(utterance.text, matchesByUtterance[index], search.current)
                 val speakerIndex = timeline.speakerIndexByUtterance[index]
-                if (layout == TranscriptLayout.Dialog) {
-                    DialogMessage(utterance, text, speakerIndex, current = index == currentUtterance)
+                val current = index == currentUtterance || index == playingIndex
+                // Тап по реплике — проиграть её с начала.
+                val itemModifier = if (player != null) {
+                    Modifier.clickable(onClickLabel = "Проиграть реплику") { player.playFrom(utterance.startMs) }
                 } else {
-                    StenogramItem(utterance, text, speakerIndex, current = index == currentUtterance)
+                    Modifier
+                }
+                if (layout == TranscriptLayout.Dialog) {
+                    DialogMessage(utterance, text, speakerIndex, current = current, modifier = itemModifier)
+                } else {
+                    StenogramItem(utterance, text, speakerIndex, current = current, modifier = itemModifier)
                 }
             }
             item(key = SUMMARY_KEY) { ProcessingSummary(done, detailed = false, Modifier.padding(top = spacing.s3)) }
