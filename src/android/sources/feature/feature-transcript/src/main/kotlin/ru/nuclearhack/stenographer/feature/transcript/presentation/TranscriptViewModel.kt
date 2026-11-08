@@ -12,6 +12,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import ru.nuclearhack.stenographer.common.uikit.udf.UdfViewModel
+import ru.nuclearhack.stenographer.core.domain.engine.ProtocolGenerator
 import ru.nuclearhack.stenographer.core.domain.repository.TranscriptFormat
 import ru.nuclearhack.stenographer.core.domain.usecase.ExportTranscriptUseCase
 import ru.nuclearhack.stenographer.core.domain.usecase.ProcessingStage
@@ -22,6 +23,9 @@ import ru.nuclearhack.stenographer.core.model.DocumentRef
 import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.estimateRemainingMs
 import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.exportFileName
 import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.findMatches
+import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.formatProtocol
+import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.protocolDate
+import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.speakerNumbers
 import kotlin.time.TimeSource
 
 /**
@@ -35,9 +39,12 @@ class TranscriptViewModel(
     @Assisted private val audio: AudioRef,
     private val transcribeAudio: TranscribeAudioUseCase,
     private val exportTranscript: ExportTranscriptUseCase,
+    private val protocolGenerator: ProtocolGenerator,
 ) : UdfViewModel<TranscriptState, TranscriptAction, TranscriptEffect>(TranscriptState()) {
 
     private var processing: Job? = null
+    private var protocolJob: Job? = null
+    private var readyProtocol: ProtocolUi.Ready? = null
     private var currentStage: ProcessingStage? = null
     private var stageStart = TimeSource.Monotonic.markNow()
     private val finishedStages = mutableMapOf<ProcessingStage, Long>()
@@ -48,6 +55,16 @@ class TranscriptViewModel(
 
     override fun onAction(action: TranscriptAction) {
         when (action) {
+            TranscriptAction.ProtocolOpened,
+            TranscriptAction.ProtocolRetry,
+            TranscriptAction.ProtocolClosed,
+            TranscriptAction.ProtocolCopy,
+            TranscriptAction.ProtocolShare,
+            -> onProtocolAction(action)
+            is TranscriptAction.SpeakerRenameOpened,
+            is TranscriptAction.SpeakerRenamed,
+            TranscriptAction.SpeakerRenameDismissed,
+            -> onSpeakerAction(action)
             TranscriptAction.Retry -> startProcessing()
             TranscriptAction.Cancel -> cancelProcessing()
             is TranscriptAction.LayoutSelected -> updateState { copy(layout = action.layout) }
@@ -66,6 +83,76 @@ class TranscriptViewModel(
             is TranscriptAction.ExportDestinationChosen -> export(action.destination, action.format)
         }
     }
+
+    private fun onSpeakerAction(action: TranscriptAction) {
+        when (action) {
+            is TranscriptAction.SpeakerRenameOpened ->
+                updateState { copy(renamingSpeaker = action.speakerIndex, sheet = null) }
+            is TranscriptAction.SpeakerRenamed -> updateState {
+                val name = action.name.trim()
+                val names = if (name.isEmpty()) {
+                    speakerNames - action.speakerIndex
+                } else {
+                    speakerNames + (action.speakerIndex to name)
+                }
+                copy(speakerNames = names, renamingSpeaker = null)
+            }
+            TranscriptAction.SpeakerRenameDismissed -> updateState { copy(renamingSpeaker = null) }
+            else -> Unit
+        }
+    }
+
+    private fun onProtocolAction(action: TranscriptAction) {
+        when (action) {
+            TranscriptAction.ProtocolOpened -> openProtocol()
+            TranscriptAction.ProtocolRetry -> {
+                readyProtocol = null
+                openProtocol()
+            }
+            TranscriptAction.ProtocolClosed -> closeProtocol()
+            TranscriptAction.ProtocolCopy -> protocolText()?.let { sendEffect(TranscriptEffect.CopyText(it)) }
+            TranscriptAction.ProtocolShare -> protocolText()?.let {
+                sendEffect(TranscriptEffect.ShareText("Протокол встречи", it))
+            }
+            else -> Unit
+        }
+    }
+
+    private fun openProtocol() {
+        val done = currentState.phase as? TranscriptPhase.Done ?: return
+        readyProtocol?.let {
+            updateState { copy(protocol = it, sheet = null) }
+            return
+        }
+        protocolJob?.cancel()
+        updateState { copy(protocol = ProtocolUi.Generating(0f), sheet = null) }
+        protocolJob = viewModelScope.launch {
+            val result = try {
+                val generated = protocolGenerator.generate(done.transcript) { p ->
+                    updateState {
+                        if (protocol is ProtocolUi.Generating) copy(protocol = ProtocolUi.Generating(p)) else this
+                    }
+                }
+                ProtocolUi.Ready(generated, protocolDate(), speakerNumbers(done)).also { readyProtocol = it }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ProtocolUi.Failed(e.userMessage())
+            }
+            updateState { if (protocol != null) copy(protocol = result) else this }
+        }
+    }
+
+    /** Генерация продолжается в фоне: при повторном открытии покажем готовый протокол. */
+    private fun closeProtocol() {
+        if (currentState.protocol is ProtocolUi.Failed) protocolJob?.cancel()
+        updateState { copy(protocol = null) }
+    }
+
+    private fun protocolText(): String? =
+        (currentState.protocol as? ProtocolUi.Ready)?.let {
+            formatProtocol(it.protocol, currentState.fileName, currentState.speakerNames)
+        }
 
     private fun cancelProcessing() {
         processing?.cancel()

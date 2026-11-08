@@ -10,3 +10,7 @@
 	path = src/android/third_party/sentencepiece
 	url = https://github.com/google/sentencepiece.git
 	shallow = true
+[submodule "src/android/third_party/llama.cpp-llm"]
+	path = src/android/third_party/llama.cpp-llm
+	url = https://github.com/ggml-org/llama.cpp.git
+	shallow = true

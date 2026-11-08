@@ -25,10 +25,12 @@ import ru.nuclearhack.stenographer.core.domain.repository.TranscriptFormat
 import ru.nuclearhack.stenographer.core.domain.settings.DefaultSettings
 import ru.nuclearhack.stenographer.core.domain.usecase.TranscribeAudioUseCase
 import ru.nuclearhack.stenographer.core.domain.usecase.TranscriptionEvent
+import ru.nuclearhack.stenographer.core.llm.LfmProtocolGenerator
 import ru.nuclearhack.stenographer.core.llm.LlamaTranscriptPostProcessor
 import ru.nuclearhack.stenographer.core.model.AudioRef
 import ru.nuclearhack.stenographer.core.model.DocumentRef
 import java.io.File
+import kotlin.time.measureTimedValue
 
 /**
  * Весь конвейер на устройстве с моделями из APK: декодирование → Nemotron → нарезка → GigaAM → сборка
@@ -95,6 +97,17 @@ class PipelineDeviceTest {
         )
 
         assertTrue("Пустая расшифровка", completed.transcript.utterances.isNotEmpty())
+
+        // Протокол встречи (локальная LLM) — отдельный шаг поверх расшифровки, в RTF расшифровки не входит.
+        if (InstrumentationRegistry.getArguments().getString("protocol") != "false") {
+            val (protocol, took) = measureTimedValue {
+                LfmProtocolGenerator(installer).generate(completed.transcript)
+            }
+            Log.i(TAG, "protocol ${took.inWholeMilliseconds} ms: $protocol")
+            File(file.parentFile, "${file.nameWithoutExtension}.protocol.txt")
+                .writeText("took_ms=${took.inWholeMilliseconds}\n$protocol\n")
+            assertTrue("Пустой протокол", protocol.summary.isNotBlank())
+        }
     }
 
     private companion object {

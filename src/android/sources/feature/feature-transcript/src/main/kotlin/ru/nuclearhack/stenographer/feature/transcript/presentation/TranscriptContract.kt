@@ -3,6 +3,7 @@ package ru.nuclearhack.stenographer.feature.transcript.presentation
 import ru.nuclearhack.stenographer.core.domain.repository.TranscriptFormat
 import ru.nuclearhack.stenographer.core.domain.usecase.ProcessingStage
 import ru.nuclearhack.stenographer.core.domain.usecase.ProcessingTimings
+import ru.nuclearhack.stenographer.core.model.MeetingProtocol
 import ru.nuclearhack.stenographer.core.model.Transcript
 import ru.nuclearhack.stenographer.feature.transcript.presentation.logic.SearchMatch
 
@@ -14,7 +15,26 @@ data class TranscriptState(
     val search: SearchState = SearchState(),
     val sheet: TranscriptSheet? = null,
     val exportFormat: TranscriptFormat = TranscriptFormat.Json,
+    /** Открыт экран «Протокол встречи» (S08); null — показан результат расшифровки. */
+    val protocol: ProtocolUi? = null,
+    /** Имена говорящих от пользователя: индекс спикера (с нуля) → имя. В JSON по ТЗ остаются speaker_N. */
+    val speakerNames: Map<Int, String> = emptyMap(),
+    /** Открыта шторка переименования этого спикера. */
+    val renamingSpeaker: Int? = null,
 )
+
+/** Протокол встречи от локальной LLM: составляется, готов или не получился. */
+sealed interface ProtocolUi {
+    data class Generating(val progress: Float) : ProtocolUi
+
+    data class Ready(
+        val protocol: MeetingProtocol,
+        val createdAt: String,
+        val speakerNumbers: Map<String, Int>,
+    ) : ProtocolUi
+
+    data class Failed(val message: String) : ProtocolUi
+}
 
 /** Формат показа результата: пузыри с лентой или плотная стенограмма. */
 enum class TranscriptLayout(val title: String) {
@@ -57,6 +77,24 @@ sealed interface TranscriptPhase {
 }
 
 sealed interface TranscriptAction {
+    /** Открыть протокол: при первом открытии модель его составляет, дальше показывается готовый. */
+    data object ProtocolOpened : TranscriptAction
+
+    data class SpeakerRenameOpened(val speakerIndex: Int) : TranscriptAction
+
+    /** Пустое имя — вернуть «Спикер N». */
+    data class SpeakerRenamed(val speakerIndex: Int, val name: String) : TranscriptAction
+
+    data object SpeakerRenameDismissed : TranscriptAction
+
+    data object ProtocolClosed : TranscriptAction
+
+    data object ProtocolRetry : TranscriptAction
+
+    data object ProtocolCopy : TranscriptAction
+
+    data object ProtocolShare : TranscriptAction
+
     data object Retry : TranscriptAction
 
     /** Отмена обработки: конвейер останавливается, экран закрывает вызывающий. */
@@ -88,6 +126,10 @@ sealed interface TranscriptAction {
 }
 
 sealed interface TranscriptEffect {
+    data class CopyText(val text: String) : TranscriptEffect
+
+    data class ShareText(val title: String, val text: String) : TranscriptEffect
+
     data class ChooseExportDestination(val suggestedName: String, val format: TranscriptFormat) : TranscriptEffect
 
     data class ShowMessage(val text: String) : TranscriptEffect

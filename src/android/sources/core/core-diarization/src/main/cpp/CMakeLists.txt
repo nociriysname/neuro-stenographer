@@ -35,9 +35,21 @@ add_compile_options(-ffunction-sections -fdata-sections)
 # -----------------------------------------------------------------------------
 set(BUILD_SHARED_LIBS   OFF CACHE BOOL "" FORCE)
 set(GGML_NATIVE         OFF CACHE BOOL "" FORCE)
-# Базовый уровень — ARMv8.2 + dotprod + fp16: телефоны примерно с 2019 года (Snapdragon 855+)
-# и эмулятор на Apple Silicon. dotprod заметно ускоряет матричные умножения в q8_0.
-set(GGML_CPU_ARM_ARCH   "armv8.2-a+dotprod+fp16" CACHE STRING "" FORCE)
+# ARM: базовый ARMv8-a, чтобы приложение работало на любом 64-битном телефоне (см. ниже).
+if(ANDROID_ABI STREQUAL "arm64-v8a")
+    # Базовый ARMv8-a без dotprod/fp16: иначе SIGILL на телефонах с ARMv8.0 (Snapdragon 685 в Redmi Note 13 4G,
+    # Cortex-A53/A73: приложение падало на диаризации). ONNX Runtime (ASR) выбирает инструкции сам во время работы.
+    set(GGML_CPU_ARM_ARCH "armv8-a" CACHE STRING "" FORCE)
+elseif(ANDROID_ABI STREQUAL "x86_64")
+    # Стандартный эмулятор Android (QEMU) отдаёт гостю только SSE4.2/AVX/F16C — без AVX2 и FMA,
+    # даже если хост их умеет (проверено на android-36 x86_64). AVX2-сборка упала бы с SIGILL.
+    foreach(opt GGML_SSE42 GGML_AVX GGML_F16C)
+        set(${opt} ON CACHE BOOL "" FORCE)
+    endforeach()
+    foreach(opt GGML_AVX2 GGML_FMA GGML_BMI2 GGML_AVX512)
+        set(${opt} OFF CACHE BOOL "" FORCE)
+    endforeach()
+endif()
 set(GGML_OPENMP         OFF CACHE BOOL "" FORCE)
 set(GGML_LLAMAFILE      ON  CACHE BOOL "" FORCE)
 set(GGML_BACKEND_DL     OFF CACHE BOOL "" FORCE)
@@ -51,6 +63,21 @@ add_subdirectory("${LLAMA_CPP_DIR}/ggml" "${CMAKE_BINARY_DIR}/ggml" EXCLUDE_FROM
 set(SPM_ENABLE_SHARED   OFF CACHE BOOL "" FORCE)
 set(SPM_ENABLE_TCMALLOC OFF CACHE BOOL "" FORCE)
 set(SPM_BUILD_TEST      OFF CACHE BOOL "" FORCE)
+# SentencePiece по умолчанию клонирует abseil через FetchContent прямо в свой каталог исходников. При сборке
+# двух ABI параллельно (arm64 + x86_64) два клона пишут в одну папку и ломают друг друга, а без доступа к GitHub
+# сборка не идёт вовсе. Поэтому abseil подключаем сами из ${SPM_DIR}/third_party/abseil-cpp (кладёт
+# tools/fetch_models.sh), а SentencePiece говорим, что провайдер — «свой» (ни module, ни package).
+set(ABSL_DIR "${SPM_DIR}/third_party/abseil-cpp")
+if(NOT EXISTS "${ABSL_DIR}/CMakeLists.txt")
+    message(FATAL_ERROR "Нет abseil в ${ABSL_DIR}. Выполните tools/fetch_models.sh (скачает abseil 20260526.0).")
+endif()
+if(NOT EXISTS "${SPM_DIR}/third_party/absl")
+    file(CREATE_LINK "${ABSL_DIR}/absl" "${SPM_DIR}/third_party/absl" SYMBOLIC)
+endif()
+set(ABSL_PROPAGATE_CXX_STD ON CACHE BOOL "" FORCE)
+set(ABSL_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+add_subdirectory("${ABSL_DIR}" "${CMAKE_BINARY_DIR}/abseil-cpp" EXCLUDE_FROM_ALL)
+set(SPM_ABSL_PROVIDER "steno" CACHE STRING "" FORCE)
 add_subdirectory("${SPM_DIR}" "${CMAKE_BINARY_DIR}/sentencepiece" EXCLUDE_FROM_ALL)
 
 # -----------------------------------------------------------------------------

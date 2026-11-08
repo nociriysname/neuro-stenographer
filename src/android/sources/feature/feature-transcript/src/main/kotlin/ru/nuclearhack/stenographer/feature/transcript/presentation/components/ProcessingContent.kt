@@ -106,8 +106,9 @@ internal fun ProcessingContent(
     }
 }
 
+// Этап постобработки текста пустой (расшифровку не правим), поэтому в списке этапов его не показываем.
 private fun processingSteps(processing: TranscriptPhase.Processing?): List<StenoStep> =
-    ProcessingStage.entries.map { stage ->
+    ProcessingStage.entries.filter { it != ProcessingStage.PostProcessing }.map { stage ->
         val current = processing?.stage?.ordinal ?: -1
         when {
             stage.ordinal < current -> StenoStep(

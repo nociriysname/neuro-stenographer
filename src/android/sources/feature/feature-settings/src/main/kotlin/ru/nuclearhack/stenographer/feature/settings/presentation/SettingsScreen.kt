@@ -172,21 +172,26 @@ private fun Section(title: String, content: @Composable () -> Unit) {
 private fun RecognitionSection(state: SettingsState, onAction: (SettingsAction) -> Unit) {
     val selected = state.effectivePunctuation
     Section("Распознавание речи") {
+        // Показываем только варианты, модели которых есть в APK: недоступный выбирать бессмысленно.
         Column(verticalArrangement = Arrangement.spacedBy(StenoTheme.spacing.s2)) {
-            PunctuationOption(
-                title = "С пунктуацией",
-                subtitle = "Точки и запятые расставит модель",
-                available = state.punctuatedAvailable,
-                selected = selected == true,
-                onClick = { onAction(SettingsAction.SelectPunctuation(true)) },
-            )
-            PunctuationOption(
-                title = "Без пунктуации",
-                subtitle = "Быстрее, текст без знаков препинания",
-                available = state.plainAvailable,
-                selected = selected == false,
-                onClick = { onAction(SettingsAction.SelectPunctuation(false)) },
-            )
+            if (state.punctuatedAvailable) {
+                PunctuationOption(
+                    title = "С пунктуацией",
+                    subtitle = "Точки и запятые расставит модель",
+                    available = true,
+                    selected = selected == true,
+                    onClick = { onAction(SettingsAction.SelectPunctuation(true)) },
+                )
+            }
+            if (state.plainAvailable) {
+                PunctuationOption(
+                    title = "Без пунктуации",
+                    subtitle = "Быстрее, текст без знаков препинания",
+                    available = true,
+                    selected = selected == false,
+                    onClick = { onAction(SettingsAction.SelectPunctuation(false)) },
+                )
+            }
         }
     }
 }

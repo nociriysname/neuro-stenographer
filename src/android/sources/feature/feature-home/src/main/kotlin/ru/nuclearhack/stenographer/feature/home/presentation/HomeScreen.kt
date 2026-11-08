@@ -14,13 +14,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import kotlinx.coroutines.launch
 import ru.nuclearhack.stenographer.common.uikit.components.badge.StenoBadge
 import ru.nuclearhack.stenographer.common.uikit.components.badge.StenoBadgeTone
 import ru.nuclearhack.stenographer.common.uikit.components.badge.StenoStatusDot
@@ -53,6 +51,7 @@ import java.util.Locale
 fun HomeScreen(
     onOpenTranscript: (AudioRef) -> Unit,
     onOpenSettings: () -> Unit,
+    onRecord: () -> Unit = {},
     viewModel: HomeViewModel = metroViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -75,7 +74,6 @@ fun HomeScreen(
     }
 
     val toasts = rememberStenoToastHostState()
-    val scope = rememberCoroutineScope()
     val today = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("d MMMM", Locale.forLanguageTag("ru"))) }
 
     HomeContent(
@@ -83,7 +81,7 @@ fun HomeScreen(
         today = today,
         toasts = toasts,
         onPickAudio = { pickAudio.launch(arrayOf("audio/*")) },
-        onRecord = { scope.launch { toasts.show("Запись появится в следующей версии", icon = StenoIcons.Mic) } },
+        onRecord = onRecord,
         onOpenSettings = onOpenSettings,
     )
 }
@@ -123,7 +121,7 @@ private fun HomeContent(
             PrivacyBadges(state.engines)
             StenoActionCard(
                 title = "Записать разговор",
-                subtitle = "Скоро: диктофон с паузой в любой момент",
+                subtitle = "Диктофон с паузой",
                 icon = StenoIcons.Record,
                 onClick = onRecord,
                 modifier = Modifier.padding(top = spacing.s2),

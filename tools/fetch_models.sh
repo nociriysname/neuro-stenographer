@@ -121,6 +121,26 @@ if [[ -d "$ASR_ASSETS/$GIGAAM_OTHER_DIR" ]]; then
     echo "rm    $(rel "$ASR_ASSETS/$GIGAAM_OTHER_DIR")/ (в APK остаётся один вариант GigaAM)"
 fi
 
+# Протокол встречи: LFM3-1.7B, дообученная на протоколы (LoRA), Q4_K_M. См. docs/LLM_PROTOCOL.md.
+LLM_ASSETS="$ANDROID_DIR/sources/core/core-llm/src/main/assets/models"
+fetch "https://huggingface.co/Den4ikAI/LFM3-1.7B-meeting-protocol-ru-GGUF/resolve/85f0f9916269bc85fbd2aea525e78b03968b0f2b/lfm3-protocol-ru-Q4_K_M.gguf" \
+      "$LLM_ASSETS/lfm3-protocol-Q4_K_M.gguf" \
+      "7bfeccc5cafbedf311bb314ef5248a9f0b814cde4a75181ca1436e5338b19b82"
+
+# abseil для SentencePiece (собирается вместе с диаризацией). Кладём заранее: иначе CMake клонирует его с GitHub
+# во время сборки, причём для двух ABI параллельно в одну папку (см. core-diarization/src/main/cpp/CMakeLists.txt).
+ABSL_DIR="$ANDROID_DIR/third_party/sentencepiece/third_party/abseil-cpp"
+ABSL_SHA256="6e1aee535473414164bf83e4ebc40240dec71a4701f8a642d906e95bea1aea0c"
+if [[ -f "$ABSL_DIR/CMakeLists.txt" ]]; then
+    echo "ok    $(rel "$ABSL_DIR")/"
+else
+    fetch "https://github.com/abseil/abseil-cpp/archive/refs/tags/20260526.0.tar.gz" \
+          "$CACHE/abseil-cpp-20260526.0.tar.gz" "$ABSL_SHA256"
+    mkdir -p "$ABSL_DIR"
+    tar -xzf "$CACHE/abseil-cpp-20260526.0.tar.gz" -C "$ABSL_DIR" --strip-components=1
+    echo "unpack $(rel "$ABSL_DIR")/"
+fi
+
 if [[ $PUSH_ADB == 1 ]]; then
     ADB="${ADB:-adb}"
     REMOTE="/sdcard/Android/data/$APP_ID/files/models"
@@ -129,4 +149,5 @@ if [[ $PUSH_ADB == 1 ]]; then
     "$ADB" shell chmod 777 "$REMOTE" "$REMOTE/$GIGAAM_DIR" 2>/dev/null || true
     "$ADB" push "$DIAR_ASSETS/Nemotron-3-Diarization.q8_0.gguf" "$REMOTE/"
     for file in "${GIGAAM_FILES[@]}"; do "$ADB" push "$ASR_ASSETS/$GIGAAM_DIR/$file" "$REMOTE/$GIGAAM_DIR/"; done
+    "$ADB" push "$LLM_ASSETS/lfm3-protocol-Q4_K_M.gguf" "$REMOTE/"
 fi
