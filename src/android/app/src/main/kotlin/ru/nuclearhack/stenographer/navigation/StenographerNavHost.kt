@@ -31,10 +31,15 @@ data class TranscriptRoute(val audioUri: String) : NavKey
  * Фичи не знают друг о друге: экран отдаёт наружу колбэки, а переходы связывает только :app.
  * ViewModelStore-декоратор даёт каждому экрану в back stack собственные ViewModel.
  * [showOnboarding] — первый запуск: онбординг вместо главной.
+ * [initialAudioUri] — запись, открытая из другого приложения: главная и поверх неё расшифровка.
  */
 @Composable
-fun StenographerNavHost(showOnboarding: Boolean, modifier: Modifier = Modifier) {
-    val backStack = rememberNavBackStack(if (showOnboarding) OnboardingRoute else HomeRoute)
+fun StenographerNavHost(showOnboarding: Boolean, modifier: Modifier = Modifier, initialAudioUri: String? = null) {
+    val backStack = when {
+        showOnboarding -> rememberNavBackStack(OnboardingRoute)
+        initialAudioUri != null -> rememberNavBackStack(HomeRoute, TranscriptRoute(initialAudioUri))
+        else -> rememberNavBackStack(HomeRoute)
+    }
 
     NavDisplay(
         backStack = backStack,

@@ -89,8 +89,16 @@ internal fun ProtocolContent(
                 Modifier.padding(start = spacing.s5, end = spacing.s5, top = spacing.s3, bottom = spacing.s5),
                 verticalArrangement = Arrangement.spacedBy(spacing.s2),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.s2)) {
-                    StenoIcon(StenoIcons.Info, contentDescription = null, tint = StenoTheme.colors.text2, size = spacing.s5)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.s2),
+                ) {
+                    StenoIcon(
+                        StenoIcons.Info,
+                        contentDescription = null,
+                        tint = StenoTheme.colors.text2,
+                        size = spacing.s5,
+                    )
                     StenoText(
                         "Протокол пишет небольшая модель — проверьте формулировки",
                         style = StenoTheme.typography.caption,
@@ -126,8 +134,16 @@ private fun ProtocolHeader(subtitle: String, onBack: () -> Unit, onCopy: (() -> 
                 modifier = Modifier.semantics { heading() },
                 style = StenoTheme.typography.labelLarge,
             )
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.s1)) {
-                StenoIcon(StenoIcons.Chip, contentDescription = null, tint = StenoTheme.colors.text2, size = spacing.s4)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing.s1),
+            ) {
+                StenoIcon(
+                    StenoIcons.Chip,
+                    contentDescription = null,
+                    tint = StenoTheme.colors.text2,
+                    size = spacing.s4,
+                )
                 StenoText(subtitle, style = StenoTheme.typography.caption, color = StenoTheme.colors.text2)
             }
         }

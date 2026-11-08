@@ -1,0 +1,15 @@
+{"type":"object","additionalProperties":false,"required":["items"],
+ "properties":{"items":{"type":"array","items":{"type":"object","additionalProperties":false,
+  "required":["id","dialog","protocol"],
+  "properties":{
+   "id":{"type":"integer"},
+   "dialog":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["speaker","text"],
+      "properties":{"speaker":{"type":"integer"},"text":{"type":"string"}}}},
+   "protocol":{"type":"object","additionalProperties":false,"required":["title","summary","decisions","tasks","key_points"],
+    "properties":{
+     "title":{"type":"string"},
+     "summary":{"type":"string"},
+     "decisions":{"type":"array","items":{"type":"string"}},
+     "tasks":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["task","assignee","due"],
+        "properties":{"task":{"type":"string"},"assignee":{"type":["string","null"]},"due":{"type":["string","null"]}}}},
+     "key_points":{"type":"array","items":{"type":"string"}}}}}}}}}

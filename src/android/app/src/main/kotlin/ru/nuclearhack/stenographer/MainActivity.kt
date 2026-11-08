@@ -1,7 +1,9 @@
 package ru.nuclearhack.stenographer
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -11,6 +13,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.core.content.IntentCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
@@ -37,6 +40,8 @@ class MainActivity(
         super.onCreate(savedInstanceState)
         // Стартовый экран выбирается один раз: после онбординга флаг меняется, но back stack уже другой.
         val showOnboarding = !settingsRepository.settings.value.onboardingCompleted
+        // Запись, переданная другим приложением («Открыть в…», «Поделиться»): после онбординга сразу расшифровка.
+        val sharedAudio = if (savedInstanceState == null) sharedAudioUri(intent) else null
         setContent {
             val settings by settingsRepository.settings.collectAsStateWithLifecycle()
             val darkTheme = when (settings.themeMode) {
@@ -56,9 +61,15 @@ class MainActivity(
             }
             StenoTheme(darkTheme = darkTheme) {
                 CompositionLocalProvider(LocalMetroViewModelFactory provides viewModelFactory) {
-                    StenographerNavHost(showOnboarding = showOnboarding)
+                    StenographerNavHost(showOnboarding = showOnboarding, initialAudioUri = sharedAudio)
                 }
             }
         }
     }
+
+    private fun sharedAudioUri(intent: Intent?): String? = when (intent?.action) {
+        Intent.ACTION_VIEW -> intent.data
+        Intent.ACTION_SEND -> IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
+        else -> null
+    }?.toString()
 }

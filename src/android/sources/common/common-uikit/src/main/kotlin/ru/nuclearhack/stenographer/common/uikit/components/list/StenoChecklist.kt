@@ -97,7 +97,10 @@ fun StenoTaskItem(
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             StenoText(text, style = StenoTheme.typography.body)
             if (meta != null || badge != null) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     badge?.invoke()
                     if (meta != null) {
                         StenoText(meta, style = StenoTheme.typography.caption, color = StenoTheme.colors.text2)

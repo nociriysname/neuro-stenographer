@@ -55,13 +55,12 @@ class TranscriptViewModel(
 
     override fun onAction(action: TranscriptAction) {
         when (action) {
-            TranscriptAction.ProtocolOpened -> openProtocol()
-            TranscriptAction.ProtocolRetry -> { readyProtocol = null; openProtocol() }
-            TranscriptAction.ProtocolClosed -> closeProtocol()
-            TranscriptAction.ProtocolCopy -> protocolText()?.let { sendEffect(TranscriptEffect.CopyText(it)) }
-            TranscriptAction.ProtocolShare -> protocolText()?.let {
-                sendEffect(TranscriptEffect.ShareText("Протокол встречи", it))
-            }
+            TranscriptAction.ProtocolOpened,
+            TranscriptAction.ProtocolRetry,
+            TranscriptAction.ProtocolClosed,
+            TranscriptAction.ProtocolCopy,
+            TranscriptAction.ProtocolShare,
+            -> onProtocolAction(action)
             TranscriptAction.Retry -> startProcessing()
             TranscriptAction.Cancel -> cancelProcessing()
             is TranscriptAction.LayoutSelected -> updateState { copy(layout = action.layout) }
@@ -81,15 +80,36 @@ class TranscriptViewModel(
         }
     }
 
+    private fun onProtocolAction(action: TranscriptAction) {
+        when (action) {
+            TranscriptAction.ProtocolOpened -> openProtocol()
+            TranscriptAction.ProtocolRetry -> {
+                readyProtocol = null
+                openProtocol()
+            }
+            TranscriptAction.ProtocolClosed -> closeProtocol()
+            TranscriptAction.ProtocolCopy -> protocolText()?.let { sendEffect(TranscriptEffect.CopyText(it)) }
+            TranscriptAction.ProtocolShare -> protocolText()?.let {
+                sendEffect(TranscriptEffect.ShareText("Протокол встречи", it))
+            }
+            else -> Unit
+        }
+    }
+
     private fun openProtocol() {
         val done = currentState.phase as? TranscriptPhase.Done ?: return
-        readyProtocol?.let { updateState { copy(protocol = it, sheet = null) }; return }
+        readyProtocol?.let {
+            updateState { copy(protocol = it, sheet = null) }
+            return
+        }
         protocolJob?.cancel()
         updateState { copy(protocol = ProtocolUi.Generating(0f), sheet = null) }
         protocolJob = viewModelScope.launch {
             val result = try {
                 val generated = protocolGenerator.generate(done.transcript) { p ->
-                    updateState { if (protocol is ProtocolUi.Generating) copy(protocol = ProtocolUi.Generating(p)) else this }
+                    updateState {
+                        if (protocol is ProtocolUi.Generating) copy(protocol = ProtocolUi.Generating(p)) else this
+                    }
                 }
                 ProtocolUi.Ready(generated, protocolDate(), speakerNumbers(done)).also { readyProtocol = it }
             } catch (e: CancellationException) {

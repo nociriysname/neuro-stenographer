@@ -23,7 +23,11 @@ data class TranscriptState(
 sealed interface ProtocolUi {
     data class Generating(val progress: Float) : ProtocolUi
 
-    data class Ready(val protocol: MeetingProtocol, val createdAt: String, val speakerNumbers: Map<String, Int>) : ProtocolUi
+    data class Ready(
+        val protocol: MeetingProtocol,
+        val createdAt: String,
+        val speakerNumbers: Map<String, Int>,
+    ) : ProtocolUi
 
     data class Failed(val message: String) : ProtocolUi
 }
