@@ -65,6 +65,9 @@ Android-приложение для Nuclear IT Hack (ноябрь 2026): лок�
   RTF 0.21–0.25 — [TEST_RESULTS](docs/TEST_RESULTS.md).
 - **Архитектура и модели:** [ARCHITECTURE](docs/ARCHITECTURE.md), локальная LLM — [LLM_PROTOCOL](docs/LLM_PROTOCOL.md).
 - **Ограничения:** [LIMITATIONS](docs/LIMITATIONS.md).
+- **Видео:** [`artifacts/demo/demo_1_real.mp4`](artifacts/demo/demo_1_real.mp4) — снимали не мы: APK дали человеку,
+  который ничего не знал о проекте; он сам установил его и записал разговор на улице в походе, и всё отработало
+  на его телефоне без интернета. Скриншоты с эмулятора — [`artifacts/demo`](artifacts/demo).
 
 ## Быстрый старт
 
