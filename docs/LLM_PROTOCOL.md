@@ -10,7 +10,7 @@
 |---|---|
 | База | [LiquidAI/LFM3-1.7B](https://huggingface.co/LiquidAI/LFM3-1.7B), русский язык поддерживается, 1.7B параметров |
 | Дообучение | LoRA r=32 на все линейные слои, 2 эпохи, 4500 примеров (см. ниже), 2× RTX 4090, ~35 мин |
-| Формат на устройстве | GGUF Q4_K_M, 1.1 ГБ, llama.cpp (CPU) |
+| Формат на устройстве | GGUF Q4_K_M, 1.1 ГБ, llama.cpp (CPU); веса — [Den4ikAI/LFM3-1.7B-meeting-protocol-ru-GGUF](https://huggingface.co/Den4ikAI/LFM3-1.7B-meeting-protocol-ru-GGUF), скачивает `tools/fetch_models.sh` |
 | Промпт | шаблон чата LFM3 с выключенными рассуждениями (`<think></think>`), расшифровка строками `спикер_N: текст` |
 | Ответ | компактный JSON `{title, summary, decisions[], tasks[{task, assignee, due}], key_points[]}` |
 | Декодирование | жадное + штраф за повторы 1.1 на последних 64 токенах (без него модель изредка зацикливается) |
